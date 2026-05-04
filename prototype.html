@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Prototype - PM Quản lý đề tài NCKH</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #f3f4f6; color: #1f2937; font-size: 13px; line-height: 1.45; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; background: #fff; border-bottom: 2px solid #111; padding: 10px 18px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-weight: 700; font-size: 14px; letter-spacing: .3px; }
+  .logo small { color: #6b7280; font-weight: 400; margin-left: 6px; }
+  .role-switcher { display: flex; gap: 6px; }
+  .role-btn { border: 1px solid #111; background: #fff; padding: 7px 14px; cursor: pointer; font-size: 12px; font-weight: 600; border-radius: 2px; }
+  .role-btn.active { background: #111; color: #fff; }
+  .user-chip { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .avatar { width: 28px; height: 28px; border: 1px solid #999; border-radius: 50%; background: #e5e7eb; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; }
+  .layout { display: flex; min-height: calc(100vh - 50px); }
+  .sidebar { width: 240px; background: #fff; border-right: 1px solid #d1d5db; padding: 14px 0; overflow-y: auto; max-height: calc(100vh - 50px); position: sticky; top: 50px; }
+  .sidebar h4 { padding: 10px 18px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; }
+  .nav-item { display: block; padding: 8px 18px; color: #1f2937; text-decoration: none; cursor: pointer; border-left: 3px solid transparent; font-size: 13px; }
+  .nav-item:hover { background: #f9fafb; }
+  .nav-item.active { background: #f3f4f6; border-left-color: #111; font-weight: 600; }
+  .main { flex: 1; padding: 22px 28px; overflow-y: auto; }
+  .breadcrumb { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; border-bottom: 2px dashed #111; padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .page-sub { font-size: 12px; color: #6b7280; margin-bottom: 18px; }
+  .card { background: #fff; border: 1px dashed #9ca3af; padding: 16px; margin-bottom: 16px; border-radius: 2px; }
+  .card-title { font-weight: 600; font-size: 13px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed #d1d5db; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .col { flex: 1 1 0; min-width: 200px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .stat { background: #fff; border: 1px dashed #9ca3af; padding: 14px; text-align: center; border-radius: 2px; }
+  .stat-num { font-size: 24px; font-weight: 700; }
+  .stat-lbl { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .field label .req { color: #b91c1c; }
+  .input, .select, .textarea { width: 100%; border: 1px solid #9ca3af; background: #fafafa; padding: 8px 10px; font-family: inherit; font-size: 13px; border-radius: 2px; }
+  .textarea { min-height: 80px; resize: vertical; }
+  .btn { display: inline-block; border: 1px solid #111; background: #fff; padding: 7px 14px; font-size: 12px; cursor: pointer; font-weight: 500; border-radius: 2px; }
+  .btn:hover { background: #f3f4f6; }
+  .btn.primary { background: #111; color: #fff; }
+  .btn.primary:hover { background: #333; }
+  .btn.danger { border-color: #b91c1c; color: #b91c1c; }
+  .btn.sm { padding: 4px 9px; font-size: 11px; }
+  .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  table.wf { width: 100%; border-collapse: collapse; background: #fff; }
+  table.wf th, table.wf td { border: 1px solid #d1d5db; padding: 7px 9px; text-align: left; font-size: 12px; vertical-align: top; }
+  table.wf th { background: #f9fafb; font-weight: 600; }
+  table.wf tr:hover { background: #fafafa; }
+  .badge { display: inline-block; padding: 2px 8px; font-size: 11px; border: 1px solid #6b7280; border-radius: 10px; }
+  .badge.draft { border-color: #6b7280; color: #374151; }
+  .badge.sent { border-color: #2563eb; color: #2563eb; }
+  .badge.review { border-color: #d97706; color: #d97706; }
+  .badge.approved { border-color: #15803d; color: #15803d; }
+  .badge.rejected { border-color: #b91c1c; color: #b91c1c; }
+  .badge.done { border-color: #15803d; color: #15803d; background: #f0fdf4; }
+  .placeholder { background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 8px, #fafafa 8px, #fafafa 16px); border: 1px dashed #9ca3af; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 12px; min-height: 120px; border-radius: 2px; padding: 16px; text-align: center; }
+  .chart-ph { min-height: 200px; }
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid #d1d5db; margin-bottom: 14px; flex-wrap: wrap; }
+  .tab { padding: 8px 14px; border: 1px solid #d1d5db; border-bottom: none; background: #f3f4f6; cursor: pointer; font-size: 12px; font-weight: 500; }
+  .tab.active { background: #fff; font-weight: 700; border-bottom: 1px solid #fff; margin-bottom: -1px; }
+  .timeline { position: relative; padding-left: 22px; }
+  .timeline::before { content: ""; position: absolute; left: 6px; top: 4px; bottom: 4px; width: 2px; background: #d1d5db; }
+  .tl-item { position: relative; padding: 6px 0 14px; }
+  .tl-item::before { content: ""; position: absolute; left: -19px; top: 10px; width: 10px; height: 10px; border: 2px solid #111; background: #fff; border-radius: 50%; }
+  .tl-item.done::before { background: #111; }
+  .tl-title { font-weight: 600; font-size: 12px; }
+  .tl-meta { color: #6b7280; font-size: 11px; }
+  .notif { padding: 10px 12px; border: 1px solid #d1d5db; border-left: 4px solid #111; margin-bottom: 8px; background: #fff; }
+  .notif-title { font-weight: 600; font-size: 12px; }
+  .notif-meta { color: #6b7280; font-size: 11px; margin-top: 2px; }
+  .search-bar { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
+  .search-bar .input { flex: 1; min-width: 200px; }
+  .role-ribbon { font-size: 10px; padding: 2px 8px; background: #111; color: #fff; border-radius: 2px; letter-spacing: 1px; }
+  .footer-hint { padding: 16px; font-size: 11px; color: #9ca3af; text-align: center; }
+  .mt-8 { margin-top: 8px; } .mt-12 { margin-top: 12px; } .mt-16 { margin-top: 16px; }
+  .mb-0 { margin-bottom: 0; } .mb-8 { margin-bottom: 8px; }
+  .text-muted { color: #6b7280; }
+  .text-right { text-align: right; }
+  .small { font-size: 11px; }
+  .divider { border: none; border-top: 1px dashed #d1d5db; margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">PM QUẢN LÝ ĐỀ TÀI NCKH <small>v0.1 · low-fi prototype</small></div>
+  <div class="role-switcher" id="roleSwitcher">
+    <button class="role-btn active" data-role="guest">KHÁCH</button>
+    <button class="role-btn" data-role="admin">ADMIN</button>
+    <button class="role-btn" data-role="user">NGƯỜI DÙNG</button>
+    <button class="role-btn" data-role="author">TÁC GIẢ</button>
+    <button class="role-btn" data-role="council">HỘI ĐỒNG</button>
+  </div>
+  <div class="user-chip">
+    <span class="role-ribbon" id="roleRibbon">ADMIN</span>
+    <span class="avatar" id="avatar">A</span>
+    <span id="userName">Trần Thị Quản Trị</span>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main" id="main"></div>
+</div>
+
+<div class="footer-hint">Prototype low-fi · Click vào menu bên trái để chuyển màn hình · Click nút role ở trên để xem theo từng vai trò</div>
+
+<script>
+const NAV = {
+  guest: [
+    { group: "TRANG CÔNG KHAI", items: [
+      { key: "guest/home", label: "Trang chủ - Đề tài công khai" },
+    ]},
+    { group: "TÀI KHOẢN", items: [
+      { key: "guest/login", label: "Đăng nhập" },
+      { key: "guest/register-user", label: "Đăng ký tài khoản Người dùng" },
+      { key: "guest/register-author", label: "Đăng ký tài khoản Tác giả" },
+      { key: "guest/forgot", label: "Quên mật khẩu" },
+    ]},
+  ],
+  admin: [
+    { group: "TỔNG QUAN", items: [
+      { key: "admin/dashboard", label: "Dashboard tổng" },
+    ]},
+    { group: "QUẢN TRỊ HỆ THỐNG", items: [
+      { key: "admin/accounts", label: "Quản trị tài khoản" },
+      { key: "admin/permissions", label: "Phân quyền chức năng" },
+      { key: "admin/categories", label: "Danh mục dùng chung" },
+      { key: "admin/audit", label: "Nhật ký hệ thống" },
+    ]},
+    { group: "HỘI ĐỒNG", items: [
+      { key: "admin/council-sci", label: "Thành viên Hội đồng KH" },
+      { key: "admin/council-eth", label: "Thành viên Hội đồng Đạo đức" },
+    ]},
+    { group: "ĐỀ TÀI NCKH", items: [
+      { key: "admin/topics", label: "Quản lý đề tài (tất cả)" },
+      { key: "admin/meeting-review", label: "Cuộc họp xét duyệt đề cương" },
+      { key: "admin/meeting-final", label: "Cuộc họp nghiệm thu" },
+      { key: "admin/code-issue", label: "Cấp mã số đề tài" },
+      { key: "admin/decisions", label: "Đăng QĐ phê duyệt / nghiệm thu" },
+    ]},
+    { group: "CHỨNG NHẬN & THÔNG BÁO", items: [
+      { key: "admin/certs", label: "Quản lý chứng nhận" },
+      { key: "admin/notifications", label: "Tạo & gửi thông báo" },
+      { key: "admin/guides", label: "Hướng dẫn & biểu mẫu" },
+    ]},
+    { group: "BÁO CÁO", items: [
+      { key: "admin/reports", label: "Báo cáo thống kê" },
+      { key: "admin/export", label: "Xuất dữ liệu Excel" },
+    ]},
+  ],
+  user: [
+    { group: "TRANG CHÍNH", items: [
+      { key: "user/home", label: "Trang chủ" },
+      { key: "user/profile", label: "Thông tin tài khoản" },
+    ]},
+    { group: "TRA CỨU & XEM", items: [
+      { key: "user/search", label: "Tra cứu đề tài" },
+      { key: "user/reports-public", label: "Báo cáo công khai" },
+      { key: "user/guides", label: "Hướng dẫn & biểu mẫu" },
+    ]},
+    { group: "TÀI KHOẢN", items: [
+      { key: "user/upgrade", label: "Nâng cấp lên Tác giả" },
+      { key: "user/notifications", label: "Thông báo của tôi" },
+    ]},
+  ],
+  author: [
+    { group: "TỔNG QUAN", items: [
+      { key: "author/dashboard", label: "Dashboard cá nhân" },
+      { key: "author/profile", label: "Hồ sơ tác giả" },
+    ]},
+    { group: "ĐỀ TÀI CỦA TÔI", items: [
+      { key: "author/topics", label: "Danh sách đề tài" },
+      { key: "author/topic-new", label: "+ Đăng ký đề tài mới" },
+      { key: "author/topic-detail", label: "Chi tiết đề tài (theo dõi)" },
+    ]},
+    { group: "KẾT QUẢ", items: [
+      { key: "author/review-result", label: "KQ xét duyệt đề cương" },
+      { key: "author/final-result", label: "KQ nghiệm thu" },
+      { key: "author/certs", label: "Chứng nhận của tôi" },
+    ]},
+    { group: "TRA CỨU & HỖ TRỢ", items: [
+      { key: "author/search", label: "Tra cứu" },
+      { key: "author/guides", label: "Hướng dẫn & biểu mẫu" },
+      { key: "author/notifications", label: "Thông báo" },
+    ]},
+  ],
+  council: [
+    { group: "TỔNG QUAN", items: [
+      { key: "council/dashboard", label: "Dashboard hội đồng" },
+      { key: "council/profile", label: "Hồ sơ thành viên" },
+    ]},
+    { group: "CÔNG VIỆC", items: [
+      { key: "council/meetings", label: "Lịch họp được phân công" },
+      { key: "council/review-list", label: "Đề tài cần xét duyệt" },
+      { key: "council/review-form", label: "Form xét duyệt đề cương" },
+      { key: "council/final-list", label: "Đề tài cần nghiệm thu" },
+      { key: "council/final-form", label: "Form nghiệm thu / chấm điểm" },
+    ]},
+    { group: "TRA CỨU & HỖ TRỢ", items: [
+      { key: "council/topics-history", label: "Lịch sử đề tài đã xét" },
+      { key: "council/search", label: "Tra cứu" },
+      { key: "council/notifications", label: "Thông báo" },
+    ]},
+  ],
+};
+
+const ROLE_USER = {
+  guest:   { name: "Khách (chưa đăng nhập)", avatar: "?", ribbon: "GUEST" },
+  admin:   { name: "Trần Thị Quản Trị", avatar: "Q", ribbon: "ADMIN" },
+  user:    { name: "Lê Minh Người Dùng", avatar: "U", ribbon: "USER" },
+  author:  { name: "BS. Nguyễn Văn Tác Giả", avatar: "T", ribbon: "TÁC GIẢ" },
+  council: { name: "PGS.TS Phạm Hội Đồng", avatar: "H", ribbon: "HỘI ĐỒNG" },
+};
+
+const SCREENS = {
+
+/* ========== GUEST (Khách - chưa đăng nhập) ========== */
+"guest/home": () => `
+  <div class="breadcrumb">Trang chủ công khai</div>
+  <div class="page-title">Cổng thông tin Đề tài Nghiên cứu Khoa học <span class="btn-group"><button class="btn sm">Đăng ký</button><button class="btn sm primary">Đăng nhập</button></span></div>
+  <div class="page-sub">Tra cứu các đề tài NCKH đã được công bố. Đăng nhập để đăng ký đề tài hoặc theo dõi tiến độ.</div>
+
+  <div class="card">
+    <div class="card-title">🔍 Tra cứu đề tài</div>
+    <div class="search-bar">
+      <input class="input" placeholder="Nhập từ khóa: tên đề tài, mã, tác giả, chuyên ngành..." />
+      <button class="btn primary">Tìm kiếm</button>
+    </div>
+    <div class="grid-4">
+      <div class="field"><label>Chuyên ngành</label><select class="select"><option>Tất cả</option><option>Nội khoa</option><option>Ngoại khoa</option><option>Nhi</option><option>Dược</option><option>CĐHA</option></select></div>
+      <div class="field"><label>Hội đồng phụ trách</label><select class="select"><option>Tất cả</option><option>HĐKH BV X</option><option>HĐKH Khoa Dược</option><option>HĐ Đạo đức</option></select></div>
+      <div class="field"><label>Thời gian thực hiện - Từ năm</label><select class="select"><option>Tất cả</option><option>2026</option><option>2025</option><option>2024</option><option>2023</option></select></div>
+      <div class="field"><label>Đến năm</label><select class="select"><option>2026</option><option>2025</option><option>2024</option></select></div>
+    </div>
+    <button class="btn">Đặt lại bộ lọc</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Danh sách đề tài đã công bố <span class="text-muted small">(87 đề tài)</span></div>
+    <table class="wf">
+      <thead>
+        <tr>
+          <th style="width:120px;">Mã đề tài</th>
+          <th>Tên đề tài</th>
+          <th style="width:160px;">Hội đồng</th>
+          <th style="width:140px;">Chuyên ngành</th>
+          <th style="width:140px;">Thời gian thực hiện</th>
+          <th style="width:160px;">Tác giả</th>
+          <th style="width:90px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ĐT-2025-112</td><td>Ứng dụng AI trong chẩn đoán hình ảnh X-quang phổi</td><td>HĐKH BV X</td><td>Chẩn đoán hình ảnh</td><td>06/2025 - 03/2026</td><td>BS. Phạm Văn D</td><td><button class="btn sm">Xem</button></td></tr>
+        <tr><td>ĐT-2025-105</td><td>Khảo sát mức độ hài lòng người bệnh nội trú</td><td>HĐKH BV X</td><td>QL bệnh viện</td><td>04/2025 - 12/2025</td><td>BS. Hoàng Thị F</td><td><button class="btn sm">Xem</button></td></tr>
+        <tr><td>ĐT-2025-098</td><td>Hiệu quả vaccine X trên trẻ em dưới 5 tuổi</td><td>HĐ Đạo đức</td><td>Nhi</td><td>06/2025 - 03/2026</td><td>BS. Trần Thị G</td><td><button class="btn sm">Xem</button></td></tr>
+        <tr><td>ĐT-2024-145</td><td>So sánh phương pháp PT mở vs nội soi điều trị viêm ruột thừa</td><td>HĐKH BV X</td><td>Ngoại khoa</td><td>03/2024 - 11/2024</td><td>BS. Lý Văn H</td><td><button class="btn sm">Xem</button></td></tr>
+        <tr><td>ĐT-2024-077</td><td>Đánh giá kết quả điều trị tăng huyết áp bằng phối hợp 3 thuốc</td><td>HĐKH Khoa Nội</td><td>Nội khoa</td><td>01/2024 - 12/2024</td><td>BS. Nguyễn Văn A</td><td><button class="btn sm">Xem</button></td></tr>
+        <tr><td>ĐT-2023-045</td><td>Khảo sát sử dụng kháng sinh dự phòng sau phẫu thuật</td><td>HĐKH Khoa Dược</td><td>Dược lâm sàng</td><td>05/2023 - 10/2023</td><td>BS. Nguyễn Văn A</td><td><button class="btn sm">Xem</button></td></tr>
+      </tbody>
+    </table>
+    <div class="mt-12 text-muted small">Hiển thị 1-6 / 87 đề tài &nbsp;|&nbsp; « Trước · 1 2 3 ... 15 · Sau »</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Bạn muốn đăng ký đề tài NCKH?</div>
+    <p class="text-muted mb-8">Đăng ký tài khoản miễn phí để theo dõi đề tài, đăng ký nghiên cứu mới, tải biểu mẫu...</p>
+    <div class="btn-group">
+      <button class="btn">Đăng ký tài khoản Người dùng</button>
+      <button class="btn primary">Đăng ký tài khoản Tác giả NCKH</button>
+    </div>
+  </div>
+`,
+
+"guest/login": () => `
+  <div class="breadcrumb">Tài khoản / Đăng nhập</div>
+  <div class="page-title">Đăng nhập hệ thống</div>
+  <div class="page-sub">F1.1.2 / F1.2.2 · Đăng nhập bằng email + mật khẩu</div>
+
+  <div style="max-width: 480px; margin: 0 auto;">
+    <div class="card">
+      <div class="card-title">🔐 Đăng nhập</div>
+      <div class="field"><label>Email <span class="req">*</span></label><input class="input" type="email" placeholder="example@bv.vn" /></div>
+      <div class="field"><label>Mật khẩu <span class="req">*</span></label><input class="input" type="password" placeholder="••••••••" /></div>
+      <div class="row mb-8" style="justify-content: space-between;">
+        <label class="small"><input type="checkbox"> Ghi nhớ đăng nhập</label>
+        <a class="small" href="#">Quên mật khẩu?</a>
+      </div>
+      <button class="btn primary" style="width: 100%;">Đăng nhập »</button>
+      <hr class="divider">
+      <div class="text-center text-muted small">Chưa có tài khoản?</div>
+      <div class="btn-group mt-8" style="justify-content: center;">
+        <button class="btn sm">+ Đăng ký Người dùng</button>
+        <button class="btn sm">+ Đăng ký Tác giả NCKH</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Bảng demo nhanh (chỉ prototype)</div>
+      <table class="wf">
+        <thead><tr><th>Role</th><th>Email demo</th></tr></thead>
+        <tbody>
+          <tr><td>Admin</td><td>qt@bv.vn</td></tr>
+          <tr><td>Người dùng</td><td>lmu@bv.vn</td></tr>
+          <tr><td>Tác giả</td><td>nva@bv.vn</td></tr>
+          <tr><td>Hội đồng</td><td>phd@bv.vn</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+`,
+
+"guest/register-user": () => `
+  <div class="breadcrumb">Tài khoản / Đăng ký Người dùng</div>
+  <div class="page-title">Đăng ký tài khoản Người dùng</div>
+  <div class="page-sub">F1.2.1 - F1.2.4 · Đăng ký + xác thực email</div>
+
+  <div style="max-width: 720px; margin: 0 auto;">
+    <div class="card">
+      <div class="card-title">📋 Bước 1: Thông tin cơ bản</div>
+      <div class="grid-2">
+        <div class="field"><label>Họ tên <span class="req">*</span></label><input class="input" placeholder="Nguyễn Văn A" /></div>
+        <div class="field"><label>Email <span class="req">*</span></label><input class="input" type="email" placeholder="example@bv.vn" /><div class="small text-muted">Email sẽ được dùng để đăng nhập + nhận thông báo</div></div>
+        <div class="field"><label>Số điện thoại <span class="req">*</span></label><input class="input" placeholder="0912 345 678" /></div>
+        <div class="field"><label>Đơn vị công tác <span class="req">*</span></label><select class="select"><option>-- Chọn --</option><option>Khoa Nội</option><option>Khoa Ngoại</option><option>Khoa Dược</option><option>Phòng KHTH</option></select></div>
+        <div class="field"><label>Chức vụ</label><input class="input" placeholder="VD: BS điều trị, ĐD..." /></div>
+        <div class="field"><label>Mã NV (nếu có)</label><input class="input" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Mật khẩu <span class="req">*</span></label><input class="input" type="password" /><div class="small text-muted">Tối thiểu 8 ký tự, có chữ + số + ký tự đặc biệt</div></div>
+        <div class="field"><label>Nhập lại mật khẩu <span class="req">*</span></label><input class="input" type="password" /></div>
+      </div>
+      <div class="field"><label><input type="checkbox"> Tôi đã đọc và đồng ý <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a></label></div>
+      <button class="btn primary" style="width: 100%;">Tiếp tục - Gửi mã xác thực qua email »</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📧 Bước 2: Xác thực email (F1.2.4)</div>
+      <p class="text-muted mb-8">Hệ thống đã gửi mã OTP 6 số đến email của bạn. Vui lòng nhập mã bên dưới:</p>
+      <div class="row" style="align-items: center;">
+        <input class="input" style="font-size: 18px; letter-spacing: 8px; text-align: center; max-width: 220px;" placeholder="••••••" maxlength="6" />
+        <button class="btn">Gửi lại mã</button>
+      </div>
+      <div class="small text-muted mt-8">Mã có hiệu lực trong 10 phút</div>
+      <button class="btn primary mt-12">Xác nhận & hoàn tất đăng ký</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ Bước 3: Hoàn tất</div>
+      <p class="text-muted">Sau khi đăng ký thành công, bạn sẽ nhận được thông báo (F1.2.3) và được tự động chuyển đến trang chủ. Bạn có thể tra cứu đề tài, tải biểu mẫu, và yêu cầu nâng cấp lên Tác giả khi cần đăng ký đề tài NCKH.</p>
+    </div>
+  </div>
+`,
+
+"guest/register-author": () => `
+  <div class="breadcrumb">Tài khoản / Đăng ký Tác giả</div>
+  <div class="page-title">Đăng ký tài khoản Tác giả NCKH</div>
+  <div class="page-sub">F1.1.1 - F1.1.6 · Đăng ký trực tiếp với tư cách tác giả (yêu cầu duyệt)</div>
+
+  <div style="max-width: 760px; margin: 0 auto;">
+    <div class="card">
+      <div class="card-title">📋 Thông tin cơ bản</div>
+      <div class="grid-2">
+        <div class="field"><label>Họ tên <span class="req">*</span></label><input class="input" /></div>
+        <div class="field"><label>Email <span class="req">*</span></label><input class="input" type="email" placeholder="example@bv.vn" /></div>
+        <div class="field"><label>Số điện thoại <span class="req">*</span></label><input class="input" /></div>
+        <div class="field"><label>Đơn vị công tác <span class="req">*</span></label><select class="select"><option>-- Chọn --</option></select></div>
+        <div class="field"><label>Mật khẩu <span class="req">*</span></label><input class="input" type="password" /></div>
+        <div class="field"><label>Nhập lại mật khẩu <span class="req">*</span></label><input class="input" type="password" /></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎓 Thông tin học thuật (bổ sung so với TK người dùng)</div>
+      <div class="grid-2">
+        <div class="field"><label>Học hàm/học vị <span class="req">*</span></label><select class="select"><option>BS</option><option>ThS</option><option>TS</option><option>PGS</option><option>GS</option></select></div>
+        <div class="field"><label>Chuyên ngành chính <span class="req">*</span></label><select class="select"><option>Nội khoa</option><option>Ngoại khoa</option><option>Dược</option><option>Nhi</option></select></div>
+        <div class="field"><label>Số CCHN</label><input class="input" placeholder="VD: 0123456789" /></div>
+        <div class="field"><label>Năm tốt nghiệp</label><input class="input" type="number" /></div>
+      </div>
+      <div class="field"><label>File minh chứng (CCHN, bằng cấp...) <span class="req">*</span></label><input class="input" type="file" multiple /></div>
+      <div class="field"><label>Định hướng nghiên cứu</label><textarea class="textarea" placeholder="Mô tả ngắn lĩnh vực nghiên cứu mà bạn quan tâm..."></textarea></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📧 Xác thực email (F1.1.4)</div>
+      <p class="text-muted mb-8">Sau khi điền form, hệ thống sẽ gửi mã OTP đến email để xác thực. Sau khi xác thực email, hồ sơ sẽ được gửi đến Admin để duyệt (1-3 ngày làm việc).</p>
+      <div class="row" style="align-items: center;">
+        <input class="input" style="max-width: 200px;" placeholder="Nhập mã OTP" />
+        <button class="btn">Gửi mã xác thực</button>
+      </div>
+    </div>
+
+    <div class="field"><label><input type="checkbox"> Tôi cam kết các thông tin cung cấp là chính xác và đồng ý với <a href="#">Quy định đăng ký đề tài NCKH</a></label></div>
+    <div class="text-right">
+      <button class="btn">Hủy</button>
+      <button class="btn primary">Gửi đăng ký »</button>
+    </div>
+  </div>
+`,
+
+"guest/forgot": () => `
+  <div class="breadcrumb">Tài khoản / Quên mật khẩu</div>
+  <div class="page-title">Quên mật khẩu</div>
+  <div class="page-sub">F1.1.5 / F1.2.5 · Khôi phục mật khẩu qua email</div>
+
+  <div style="max-width: 480px; margin: 0 auto;">
+    <div class="card">
+      <div class="card-title">🔑 Bước 1: Nhập email</div>
+      <div class="field"><label>Email đã đăng ký</label><input class="input" type="email" placeholder="example@bv.vn" /></div>
+      <button class="btn primary" style="width: 100%;">Gửi link đặt lại mật khẩu</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📧 Bước 2: Kiểm tra email</div>
+      <p class="text-muted">Hệ thống đã gửi link đặt lại mật khẩu vào email của bạn. Click vào link trong email để tiếp tục.</p>
+      <div class="small text-muted">Link có hiệu lực trong 30 phút.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔒 Bước 3: Đặt mật khẩu mới</div>
+      <div class="field"><label>Mật khẩu mới</label><input class="input" type="password" /></div>
+      <div class="field"><label>Nhập lại mật khẩu mới</label><input class="input" type="password" /></div>
+      <button class="btn primary" style="width: 100%;">Cập nhật mật khẩu</button>
+    </div>
+  </div>
+`,
+
+/* ========== ADMIN ========== */
+"admin/dashboard": () => `
+  <div class="breadcrumb">Trang chủ / Dashboard tổng</div>
+  <div class="page-title">Dashboard tổng <span class="btn-group"><button class="btn sm">Tải lại</button><button class="btn sm primary">+ Tạo nhanh</button></span></div>
+  <div class="page-sub">Tổng quan toàn hệ thống quản lý đề tài NCKH (M6.1)</div>
+  <div class="grid-4">
+    <div class="stat"><div class="stat-num">128</div><div class="stat-lbl">Đề tài đang triển khai</div></div>
+    <div class="stat"><div class="stat-num">24</div><div class="stat-lbl">Chờ xét duyệt đề cương</div></div>
+    <div class="stat"><div class="stat-num">11</div><div class="stat-lbl">Chờ nghiệm thu</div></div>
+    <div class="stat"><div class="stat-num">87</div><div class="stat-lbl">Đã cấp chứng nhận</div></div>
+  </div>
+  <div class="grid-2 mt-16">
+    <div class="card">
+      <div class="card-title">Tỉ lệ đề tài thông qua xét duyệt đề cương <button class="btn sm">Xuất</button></div>
+      <div class="placeholder chart-ph">[ Biểu đồ tròn — F6.3.1 ]</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tỉ lệ đề tài thông qua nghiệm thu <button class="btn sm">Xuất</button></div>
+      <div class="placeholder chart-ph">[ Biểu đồ cột — F6.3.2 ]</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Hoạt động gần đây</div>
+    <table class="wf">
+      <thead><tr><th>Thời gian</th><th>Người thao tác</th><th>Hành động</th><th>Đối tượng</th></tr></thead>
+      <tbody>
+        <tr><td>28/04 10:42</td><td>BS. Nguyễn V.A</td><td>Gửi đăng ký đề tài</td><td>ĐT-2026-031</td></tr>
+        <tr><td>28/04 09:15</td><td>PGS.TS Phạm H.Đ</td><td>Duyệt đề cương</td><td>ĐT-2026-029</td></tr>
+        <tr><td>27/04 16:20</td><td>Trần Thị Q.T</td><td>Tạo cuộc họp HĐ</td><td>HĐ-XD-2026-04</td></tr>
+      </tbody>
+    </table>
+  </div>
+`,
+
+"admin/accounts": () => `
+  <div class="breadcrumb">Quản trị hệ thống / Quản trị tài khoản</div>
+  <div class="page-title">Quản trị tài khoản người dùng <span class="btn-group"><button class="btn sm">Import CSV</button><button class="btn sm primary">+ Thêm tài khoản</button></span></div>
+  <div class="page-sub">F3.1.1 - F3.1.3 · Tạo / Sửa / Xóa / Phân quyền / Ghi log</div>
+  <div class="search-bar">
+    <input class="input" placeholder="Tìm theo tên / email / mã NV..." />
+    <select class="select" style="max-width: 180px;"><option>Tất cả role</option><option>Admin</option><option>Người dùng</option><option>Tác giả</option><option>Hội đồng</option></select>
+    <select class="select" style="max-width: 160px;"><option>Tất cả trạng thái</option><option>Active</option><option>Khóa</option></select>
+    <button class="btn">Lọc</button>
+  </div>
+  <table class="wf">
+    <thead><tr><th><input type="checkbox"></th><th>Mã NV</th><th>Họ tên</th><th>Email</th><th>Đơn vị</th><th>Role</th><th>Trạng thái</th><th>Đăng nhập cuối</th><th>Thao tác</th></tr></thead>
+    <tbody>
+      <tr><td><input type="checkbox"></td><td>NV001</td><td>Trần Thị Quản Trị</td><td>qt@bv.vn</td><td>Phòng CNTT</td><td><span class="badge approved">Admin</span></td><td><span class="badge done">Active</span></td><td>28/04 08:00</td><td><button class="btn sm">Sửa</button> <button class="btn sm danger">Khóa</button></td></tr>
+      <tr><td><input type="checkbox"></td><td>NV087</td><td>BS. Nguyễn Văn A</td><td>nva@bv.vn</td><td>Khoa Nội</td><td><span class="badge sent">Tác giả</span></td><td><span class="badge done">Active</span></td><td>28/04 10:42</td><td><button class="btn sm">Sửa</button> <button class="btn sm danger">Khóa</button></td></tr>
+      <tr><td><input type="checkbox"></td><td>NV045</td><td>PGS.TS Phạm H.Đ</td><td>phd@bv.vn</td><td>Khoa Ngoại</td><td><span class="badge review">Hội đồng</span></td><td><span class="badge done">Active</span></td><td>28/04 09:15</td><td><button class="btn sm">Sửa</button> <button class="btn sm danger">Khóa</button></td></tr>
+      <tr><td><input type="checkbox"></td><td>NV132</td><td>Lê Minh Người Dùng</td><td>lmu@bv.vn</td><td>Khoa Dược</td><td><span class="badge draft">Người dùng</span></td><td><span class="badge done">Active</span></td><td>27/04 14:00</td><td><button class="btn sm">Sửa</button> <button class="btn sm danger">Khóa</button></td></tr>
+    </tbody>
+  </table>
+  <div class="mt-12 text-muted small">Hiển thị 1-4 / 248 tài khoản &nbsp;|&nbsp; « Trước · 1 2 3 ... 25 · Sau »</div>
+`,
+
+"admin/permissions": () => `
+  <div class="breadcrumb">Quản trị hệ thống / Phân quyền chức năng</div>
+  <div class="page-title">Phân quyền chức năng <button class="btn sm primary">Lưu thay đổi</button></div>
+  <div class="page-sub">F3.2.1 - F3.2.3 · Phân quyền theo chức năng, dữ liệu và đề tài nghiên cứu</div>
+  <div class="tabs">
+    <div class="tab active">Theo Role</div>
+    <div class="tab">Theo Người dùng</div>
+    <div class="tab">Theo Đề tài</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ma trận chức năng × Role</div>
+    <table class="wf">
+      <thead><tr><th>Chức năng</th><th>Admin</th><th>Người dùng</th><th>Tác giả</th><th>Hội đồng</th></tr></thead>
+      <tbody>
+        <tr><td>Đăng ký đề tài NCKH</td><td>☑</td><td>☐</td><td>☑</td><td>☐</td></tr>
+        <tr><td>Duyệt đề cương</td><td>☑</td><td>☐</td><td>☐</td><td>☑</td></tr>
+        <tr><td>Cấp mã số đề tài</td><td>☑</td><td>☐</td><td>☐</td><td>☐</td></tr>
+        <tr><td>Tạo cuộc họp HĐ</td><td>☑</td><td>☐</td><td>☐</td><td>☐</td></tr>
+        <tr><td>Chấm điểm nghiệm thu</td><td>☑</td><td>☐</td><td>☐</td><td>☑</td></tr>
+        <tr><td>Cấp chứng nhận</td><td>☑</td><td>☐</td><td>☐</td><td>☐</td></tr>
+        <tr><td>Xem báo cáo công khai</td><td>☑</td><td>☑</td><td>☑</td><td>☑</td></tr>
+        <tr><td>Quản lý danh mục dùng chung</td><td>☑</td><td>☐</td><td>☐</td><td>☐</td></tr>
+      </tbody>
+    </table>
+  </div>
+`,
+
+"admin/categories": () => `
+  <div class="breadcrumb">Quản trị hệ thống / Danh mục dùng chung</div>
+  <div class="page-title">Danh mục dùng chung <button class="btn sm primary">+ Thêm mục</button></div>
+  <div class="page-sub">F3.3.1 - F3.3.10 · 10 danh mục cấu hình chung</div>
+  <div class="row">
+    <div style="width: 240px;">
+      <div class="card" style="padding:0;">
+        <div class="card-title" style="padding:10px 14px; margin:0;">Loại danh mục</div>
+        <a class="nav-item active">Địa chỉ (Tỉnh/Huyện/Xã)</a>
+        <a class="nav-item">Đơn vị công tác</a>
+        <a class="nav-item">Phân loại đề tài NCKH</a>
+        <a class="nav-item">Chuyên ngành đề tài NCKH</a>
+        <a class="nav-item">Phân loại thông báo</a>
+        <a class="nav-item">Phân loại đánh giá đề tài</a>
+        <a class="nav-item">Chức vụ</a>
+        <a class="nav-item">Vị trí, vai trò người dùng</a>
+        <a class="nav-item">Hội đồng khoa học</a>
+        <a class="nav-item">Hội đồng đạo đức</a>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <div class="card-title">Danh mục: Địa chỉ <span class="btn-group"><button class="btn sm">Import</button><button class="btn sm primary">+ Thêm</button></span></div>
+        <table class="wf">
+          <thead><tr><th>Mã</th><th>Tên</th><th>Cấp</th><th>Cha</th><th>Trạng thái</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>01</td><td>Hà Nội</td><td>Tỉnh</td><td>—</td><td><span class="badge done">Active</span></td><td><button class="btn sm">Sửa</button></td></tr>
+            <tr><td>0101</td><td>Q. Ba Đình</td><td>Quận</td><td>Hà Nội</td><td><span class="badge done">Active</span></td><td><button class="btn sm">Sửa</button></td></tr>
+            <tr><td>0102</td><td>Q. Hoàn Kiếm</td><td>Quận</td><td>Hà Nội</td><td><span class="badge done">Active</span></td><td><button class="btn sm">Sửa</button></td></tr>
+            <tr><td>79</td><td>TP. HCM</td><td>Tỉnh</td><td>—</td><td><span class="badge done">Active</span></td><td><button class="btn sm">Sửa</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+`,
+
+"admin/audit": () => `
+  <div class="breadcrumb">Quản trị hệ thống / Nhật ký hệ thống</div>
+  <div class="page-title">Nhật ký hệ thống <button class="btn sm">Xuất Excel</button></div>
+  <div class="page-sub">F3.1.3 · Ghi log mọi thao tác create/update/delete trên hệ thống</div>
+  <div class="search-bar">
+    <input class="input" placeholder="Tìm theo người dùng..." />
+    <input class="input" type="date" style="max-width: 160px;" />
+    <input class="input" type="date" style="max-width: 160px;" />
+    <select class="select" style="max-width: 180px;"><option>Tất cả hành động</option><option>Login</option><option>Create</option><option>Update</option><option>Delete</option></select>
+    <button class="btn">Lọc</button>
+  </div>
+  <table class="wf">
+    <thead><tr><th>Thời gian</th><th>User</th><th>IP</th><th>Action</th><th>Module</th><th>Đối tượng</th><th>Trước</th><th>Sau</th></tr></thead>
+    <tbody>
+      <tr><td>28/04 10:42:15</td><td>nva@bv.vn</td><td>10.0.1.15</td><td>CREATE</td><td>Đề tài</td><td>ĐT-2026-031</td><td>—</td><td>{...}</td></tr>
+      <tr><td>28/04 09:15:02</td><td>phd@bv.vn</td><td>10.0.1.22</td><td>UPDATE</td><td>Xét duyệt</td><td>ĐT-2026-029</td><td>{kq:null}</td><td>{kq:"Đạt"}</td></tr>
+      <tr><td>28/04 08:00:00</td><td>qt@bv.vn</td><td>10.0.1.5</td><td>LOGIN</td><td>Auth</td><td>—</td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table>
+`,
+
+"admin/council-sci": () => `
+  <div class="breadcrumb">Hội đồng / Thành viên Hội đồng KH</div>
+  <div class="page-title">Thành viên Hội đồng Khoa học <button class="btn sm primary">+ Thêm thành viên</button></div>
+  <div class="page-sub">F4.1.1 - F4.1.2 · Quản lý danh sách thành viên Hội đồng KH</div>
+  <table class="wf">
+    <thead><tr><th>Mã</th><th>Họ tên</th><th>Học hàm/vị</th><th>Đơn vị</th><th>Vai trò trong HĐ</th><th>Chuyên ngành</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>HDKH-001</td><td>GS.TS Lê Văn X</td><td>Giáo sư</td><td>ĐH Y Hà Nội</td><td>Chủ tịch</td><td>Nội khoa</td><td><button class="btn sm">Sửa</button> <button class="btn sm danger">Xóa</button></td></tr>
+      <tr><td>HDKH-002</td><td>PGS.TS Phạm Hội Đồng</td><td>Phó GS</td><td>BV Bạch Mai</td><td>Phó Chủ tịch</td><td>Ngoại khoa</td><td><button class="btn sm">Sửa</button> <button class="btn sm danger">Xóa</button></td></tr>
+      <tr><td>HDKH-003</td><td>TS. Nguyễn Y</td><td>Tiến sĩ</td><td>BV Việt Đức</td><td>Ủy viên</td><td>Tim mạch</td><td><button class="btn sm">Sửa</button> <button class="btn sm danger">Xóa</button></td></tr>
+      <tr><td>HDKH-004</td><td>TS. Trần Z</td><td>Tiến sĩ</td><td>BV K</td><td>Thư ký</td><td>Ung bướu</td><td><button class="btn sm">Sửa</button> <button class="btn sm danger">Xóa</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"admin/council-eth": () => `
+  <div class="breadcrumb">Hội đồng / Thành viên Hội đồng Đạo đức</div>
+  <div class="page-title">Thành viên Hội đồng Đạo đức <button class="btn sm primary">+ Thêm thành viên</button></div>
+  <div class="page-sub">F4.2.1 - F4.2.2 · Quản lý danh sách Hội đồng Đạo đức</div>
+  <table class="wf">
+    <thead><tr><th>Mã</th><th>Họ tên</th><th>Đơn vị</th><th>Vai trò</th><th>Lĩnh vực phụ trách</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>HDDD-001</td><td>GS. Đỗ Đạo Đức</td><td>Bộ Y Tế</td><td>Chủ tịch</td><td>Đạo đức Y khoa</td><td><button class="btn sm">Sửa</button></td></tr>
+      <tr><td>HDDD-002</td><td>LS. Nguyễn Pháp Lý</td><td>Đoàn LS HN</td><td>Ủy viên</td><td>Pháp lý</td><td><button class="btn sm">Sửa</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"admin/topics": () => `
+  <div class="breadcrumb">Đề tài NCKH / Quản lý đề tài</div>
+  <div class="page-title">Quản lý đề tài (toàn hệ thống) <button class="btn sm">Xuất Excel</button></div>
+  <div class="page-sub">View tổng cho Admin · F2.1 - F2.7</div>
+  <div class="search-bar">
+    <input class="input" placeholder="Tìm mã / tên đề tài / tác giả..." />
+    <select class="select" style="max-width: 160px;"><option>Tất cả trạng thái</option><option>Nháp</option><option>Đã gửi</option><option>Đang xét</option><option>Đã duyệt</option><option>Đã nghiệm thu</option></select>
+    <select class="select" style="max-width: 180px;"><option>Tất cả chuyên ngành</option><option>Nội khoa</option><option>Ngoại khoa</option><option>Dược</option></select>
+    <button class="btn">Lọc</button>
+  </div>
+  <table class="wf">
+    <thead><tr><th>Mã ĐT</th><th>Tên đề tài</th><th>Tác giả chính</th><th>Chuyên ngành</th><th>Năm</th><th>Trạng thái</th><th>HĐ phụ trách</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>ĐT-2026-031</td><td>Nghiên cứu hiệu quả thuốc X trong điều trị...</td><td>BS. Nguyễn V.A</td><td>Nội khoa</td><td>2026</td><td><span class="badge sent">Đã gửi</span></td><td>—</td><td><button class="btn sm">Xem</button></td></tr>
+      <tr><td>ĐT-2026-029</td><td>Đánh giá kết quả phẫu thuật nội soi...</td><td>BS. Lê V.B</td><td>Ngoại khoa</td><td>2026</td><td><span class="badge approved">Đã duyệt</span></td><td>HĐ-XD-04</td><td><button class="btn sm">Xem</button></td></tr>
+      <tr><td>ĐT-2026-018</td><td>Khảo sát mức độ tuân thủ phác đồ...</td><td>BS. Trần T.C</td><td>Dược</td><td>2026</td><td><span class="badge review">Đang xét</span></td><td>HĐ-XD-03</td><td><button class="btn sm">Xem</button></td></tr>
+      <tr><td>ĐT-2025-112</td><td>Ứng dụng AI trong chẩn đoán hình ảnh</td><td>BS. Phạm V.D</td><td>Chẩn đoán hình ảnh</td><td>2025</td><td><span class="badge done">Đã NT</span></td><td>HĐ-NT-12</td><td><button class="btn sm">Xem</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"admin/meeting-review": () => `
+  <div class="breadcrumb">Đề tài NCKH / Cuộc họp xét duyệt đề cương</div>
+  <div class="page-title">Cuộc họp Hội đồng xét duyệt Đề cương <button class="btn sm primary">+ Tạo cuộc họp</button></div>
+  <div class="page-sub">F2.4.1 - F2.4.5 · Tạo / Thêm / Sửa / Xóa cuộc họp xét duyệt</div>
+  <table class="wf">
+    <thead><tr><th>Mã CH</th><th>Tên cuộc họp</th><th>Thời gian</th><th>Địa điểm</th><th>Loại HĐ</th><th>Số đề tài</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>HĐ-XD-04</td><td>Họp HĐKH xét duyệt T4/2026</td><td>15/04/2026 14:00</td><td>Hội trường A</td><td>Khoa học</td><td>5</td><td><span class="badge done">Hoàn thành</span></td><td><button class="btn sm">Xem</button></td></tr>
+      <tr><td>HĐ-XD-05</td><td>Họp HĐKH xét duyệt T5/2026</td><td>10/05/2026 09:00</td><td>Hội trường A</td><td>Khoa học</td><td>7</td><td><span class="badge sent">Sắp diễn ra</span></td><td><button class="btn sm">Sửa</button> <button class="btn sm">Gán đề tài</button></td></tr>
+      <tr><td>HĐ-DD-02</td><td>Họp HĐ Đạo đức T5/2026</td><td>12/05/2026 14:00</td><td>Phòng họp 301</td><td>Đạo đức</td><td>3</td><td><span class="badge sent">Sắp diễn ra</span></td><td><button class="btn sm">Sửa</button> <button class="btn sm">Gán đề tài</button></td></tr>
+    </tbody>
+  </table>
+  <div class="card mt-16">
+    <div class="card-title">Form tạo cuộc họp (modal preview)</div>
+    <div class="grid-2">
+      <div class="field"><label>Tên cuộc họp <span class="req">*</span></label><input class="input" placeholder="VD: Họp HĐKH xét duyệt T6/2026" /></div>
+      <div class="field"><label>Loại Hội đồng <span class="req">*</span></label><select class="select"><option>Hội đồng Khoa học</option><option>Hội đồng Đạo đức</option></select></div>
+      <div class="field"><label>Thời gian <span class="req">*</span></label><input class="input" type="datetime-local" /></div>
+      <div class="field"><label>Địa điểm</label><input class="input" placeholder="Hội trường / Phòng họp" /></div>
+    </div>
+    <div class="field"><label>Thành phần Hội đồng (chọn từ DM)</label><div class="placeholder" style="min-height:60px;">[ Multi-select thành viên HĐ ]</div></div>
+    <div class="field"><label>Đề tài báo cáo</label><div class="placeholder" style="min-height:60px;">[ Multi-select đề tài chờ duyệt ]</div></div>
+    <div class="text-right"><button class="btn">Hủy</button> <button class="btn primary">Tạo & gửi thông báo</button></div>
+  </div>
+`,
+
+"admin/meeting-final": () => `
+  <div class="breadcrumb">Đề tài NCKH / Cuộc họp nghiệm thu</div>
+  <div class="page-title">Cuộc họp Hội đồng nghiệm thu Đề tài <button class="btn sm primary">+ Tạo cuộc họp</button></div>
+  <div class="page-sub">F2.6.1 - F2.6.4</div>
+  <table class="wf">
+    <thead><tr><th>Mã</th><th>Tên cuộc họp</th><th>Thời gian</th><th>Địa điểm</th><th>Số đề tài NT</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>HĐ-NT-12</td><td>Nghiệm thu các đề tài 2025 đợt 4</td><td>20/03/2026 14:00</td><td>Hội trường A</td><td>4</td><td><span class="badge done">Hoàn thành</span></td><td><button class="btn sm">Xem KQ</button></td></tr>
+      <tr><td>HĐ-NT-13</td><td>Nghiệm thu đợt 1/2026</td><td>25/05/2026 14:00</td><td>Hội trường A</td><td>2</td><td><span class="badge sent">Sắp diễn ra</span></td><td><button class="btn sm">Sửa</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"admin/code-issue": () => `
+  <div class="breadcrumb">Đề tài NCKH / Cấp mã số đề tài</div>
+  <div class="page-title">Cấp mã số đề tài (sau khi HĐ duyệt)</div>
+  <div class="page-sub">F2.2.2 · Cấp mã số đề tài theo quy định</div>
+  <table class="wf">
+    <thead><tr><th>Mã tạm</th><th>Tên đề tài</th><th>Tác giả</th><th>Ngày duyệt</th><th>Mã số chính thức</th><th>Hành động</th></tr></thead>
+    <tbody>
+      <tr><td>TMP-029</td><td>Đánh giá kết quả phẫu thuật nội soi...</td><td>BS. Lê V.B</td><td>15/04/2026</td><td><input class="input" value="ĐT-2026-029" /></td><td><button class="btn sm primary">Cấp mã & gửi TB</button></td></tr>
+      <tr><td>TMP-030</td><td>So sánh hiệu quả 2 phác đồ điều trị...</td><td>BS. Đỗ V.E</td><td>15/04/2026</td><td><input class="input" placeholder="Auto-gen..." /></td><td><button class="btn sm primary">Cấp mã & gửi TB</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"admin/decisions": () => `
+  <div class="breadcrumb">Đề tài NCKH / Quyết định</div>
+  <div class="page-title">Đăng tải Quyết định <button class="btn sm primary">+ Đăng QĐ</button></div>
+  <div class="page-sub">F2.5.6 + F2.7.6 · Đăng QĐ phê duyệt triển khai / QĐ nghiệm thu</div>
+  <table class="wf">
+    <thead><tr><th>Số QĐ</th><th>Loại</th><th>Đối tượng</th><th>File</th><th>Ngày đăng</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>QĐ-PD-029/2026</td><td>Phê duyệt triển khai</td><td>ĐT-2026-029</td><td>📎 quyetdinh.pdf</td><td>16/04/2026</td><td><button class="btn sm">Tải</button></td></tr>
+      <tr><td>QĐ-NT-012/2026</td><td>Nghiệm thu</td><td>ĐT-2025-112</td><td>📎 nghiemthu.pdf</td><td>22/03/2026</td><td><button class="btn sm">Tải</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"admin/certs": () => `
+  <div class="breadcrumb">Chứng nhận / Quản lý chứng nhận</div>
+  <div class="page-title">Quản lý chứng nhận đề tài <button class="btn sm primary">+ Cấp chứng nhận mới</button></div>
+  <div class="page-sub">F5.1.1 - F5.1.3</div>
+  <table class="wf">
+    <thead><tr><th>Số CN</th><th>Mã ĐT</th><th>Tên đề tài</th><th>Tác giả</th><th>Ngày cấp</th><th>File</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>CN-2026-087</td><td>ĐT-2025-112</td><td>Ứng dụng AI trong chẩn đoán...</td><td>BS. Phạm V.D</td><td>25/03/2026</td><td>📎 cn087.pdf</td><td><button class="btn sm">Sửa</button> <button class="btn sm">In</button></td></tr>
+      <tr><td>CN-2026-086</td><td>ĐT-2025-105</td><td>Khảo sát hài lòng người bệnh...</td><td>BS. Hoàng T.F</td><td>20/03/2026</td><td>📎 cn086.pdf</td><td><button class="btn sm">Sửa</button> <button class="btn sm">In</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"admin/notifications": () => `
+  <div class="breadcrumb">Chứng nhận & Thông báo / Thông báo</div>
+  <div class="page-title">Tạo & gửi thông báo <button class="btn sm primary">+ Tạo thông báo mới</button></div>
+  <div class="page-sub">F2.3.1 - F2.3.3 · Tạo nội dung, đăng tải/gửi, đóng thông báo</div>
+  <div class="card">
+    <div class="card-title">Form tạo thông báo</div>
+    <div class="grid-2">
+      <div class="field"><label>Tiêu đề <span class="req">*</span></label><input class="input" /></div>
+      <div class="field"><label>Loại thông báo <span class="req">*</span></label><select class="select"><option>Lịch báo cáo Đề cương</option><option>Mã số đề tài</option><option>Yêu cầu chỉnh sửa</option><option>Cấp chứng nhận</option><option>Khác</option></select></div>
+    </div>
+    <div class="field"><label>Đối tượng nhận</label><div class="placeholder" style="min-height:50px;">[ Multi-select: Tất cả tác giả / Tác giả ĐT cụ thể / Hội đồng / ... ]</div></div>
+    <div class="field"><label>Nội dung</label><textarea class="textarea"></textarea></div>
+    <div class="field"><label>File đính kèm</label><input class="input" type="file" /></div>
+    <div class="text-right"><button class="btn">Lưu nháp</button> <button class="btn primary">Đăng & gửi (email + in-app)</button></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Danh sách thông báo đã đăng</div>
+    <table class="wf">
+      <thead><tr><th>Tiêu đề</th><th>Loại</th><th>Người tạo</th><th>Ngày đăng</th><th>Đối tượng</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Lịch họp HĐ T5/2026</td><td>Lịch báo cáo</td><td>QT</td><td>20/04/2026</td><td>5 tác giả</td><td><span class="badge done">Đã gửi</span></td><td><button class="btn sm">Đóng</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+`,
+
+"admin/guides": () => `
+  <div class="breadcrumb">Chứng nhận & Thông báo / Hướng dẫn & biểu mẫu</div>
+  <div class="page-title">Hướng dẫn đăng ký & Biểu mẫu <button class="btn sm primary">+ Thêm</button></div>
+  <div class="page-sub">F2.9.1 - F2.9.2</div>
+  <table class="wf">
+    <thead><tr><th>Tên</th><th>Loại</th><th>File</th><th>Lần cập nhật</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Hướng dẫn đăng ký đề tài NCKH 2026</td><td>Hướng dẫn</td><td>📎 huongdan_2026.pdf</td><td>10/01/2026</td><td><button class="btn sm">Sửa</button></td></tr>
+      <tr><td>Biểu mẫu đề cương NCKH</td><td>Biểu mẫu</td><td>📎 BM-DC.docx</td><td>10/01/2026</td><td><button class="btn sm">Sửa</button></td></tr>
+      <tr><td>Biểu mẫu báo cáo nghiệm thu</td><td>Biểu mẫu</td><td>📎 BM-NT.docx</td><td>10/01/2026</td><td><button class="btn sm">Sửa</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"admin/reports": () => `
+  <div class="breadcrumb">Báo cáo / Báo cáo thống kê</div>
+  <div class="page-title">Báo cáo thống kê <button class="btn sm">Xuất Excel</button></div>
+  <div class="page-sub">F6.1.1 - F6.1.7 + F6.3 · 7 báo cáo + biểu đồ</div>
+  <div class="tabs">
+    <div class="tab active">Đề tài NCKH</div>
+    <div class="tab">Tác giả</div>
+    <div class="tab">Theo chuyên ngành</div>
+    <div class="tab">Xét duyệt đề cương</div>
+    <div class="tab">Nghiệm thu</div>
+    <div class="tab">Cấp chứng nhận</div>
+    <div class="tab">Chưa cấp CN</div>
+  </div>
+  <div class="search-bar">
+    <select class="select" style="max-width: 140px;"><option>Năm 2026</option></select>
+    <select class="select" style="max-width: 180px;"><option>Tất cả chuyên ngành</option></select>
+    <input class="input" type="date" style="max-width: 150px;" />
+    <input class="input" type="date" style="max-width: 150px;" />
+    <button class="btn">Áp dụng</button>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Số đề tài theo trạng thái</div><div class="placeholder chart-ph">[ Bar chart ]</div></div>
+    <div class="card"><div class="card-title">Số đề tài theo chuyên ngành</div><div class="placeholder chart-ph">[ Pie chart ]</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Bảng dữ liệu chi tiết</div>
+    <table class="wf">
+      <thead><tr><th>Mã</th><th>Tên</th><th>Tác giả</th><th>Chuyên ngành</th><th>Trạng thái</th><th>Ngày cập nhật</th></tr></thead>
+      <tbody>
+        <tr><td>ĐT-2026-031</td><td>Nghiên cứu hiệu quả thuốc X...</td><td>Nguyễn V.A</td><td>Nội khoa</td><td>Đã gửi</td><td>28/04/2026</td></tr>
+        <tr><td>ĐT-2026-029</td><td>Đánh giá phẫu thuật nội soi...</td><td>Lê V.B</td><td>Ngoại khoa</td><td>Đã duyệt</td><td>16/04/2026</td></tr>
+      </tbody>
+    </table>
+  </div>
+`,
+
+"admin/export": () => `
+  <div class="breadcrumb">Báo cáo / Xuất dữ liệu</div>
+  <div class="page-title">Xuất dữ liệu Excel</div>
+  <div class="page-sub">F6.2.1 - F6.2.3</div>
+  <div class="grid-3">
+    <div class="card"><div class="card-title">Xuất danh sách</div><div class="field"><label>Loại</label><select class="select"><option>Đề tài</option><option>Tác giả</option><option>Hội đồng</option><option>Chứng nhận</option></select></div><button class="btn primary">Xuất</button></div>
+    <div class="card"><div class="card-title">Xuất báo cáo</div><div class="field"><label>Báo cáo</label><select class="select"><option>BC tổng đề tài</option><option>BC nghiệm thu</option></select></div><button class="btn primary">Xuất</button></div>
+    <div class="card"><div class="card-title">Xuất theo điều kiện</div><div class="field"><label>Từ ngày - Đến ngày</label><input class="input" type="date" /></div><div class="field"><label>Bộ lọc khác</label><input class="input" placeholder="Lớp, khóa..." /></div><button class="btn primary">Xuất</button></div>
+  </div>
+`,
+
+/* ========== USER (Người dùng) ========== */
+"user/home": () => `
+  <div class="breadcrumb">Trang chủ</div>
+  <div class="page-title">Cổng thông tin Đề tài NCKH</div>
+  <div class="page-sub">Xin chào! Bạn đang xem với vai trò Người dùng đã đăng nhập.</div>
+  <div class="grid-3">
+    <div class="card"><div class="card-title">Đề tài đã công bố</div><div class="stat-num">87</div><div class="text-muted small mt-8">Tính đến 28/04/2026</div></div>
+    <div class="card"><div class="card-title">Cuộc họp HĐ sắp tới</div><div class="stat-num">2</div><div class="text-muted small mt-8">Trong tháng 5</div></div>
+    <div class="card"><div class="card-title">Thông báo mới</div><div class="stat-num">3</div><div class="text-muted small mt-8">Xem ngay »</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔍 Tra cứu nhanh đề tài đã công bố</div>
+    <div class="search-bar">
+      <input class="input" placeholder="Nhập từ khóa: tên đề tài, mã, tác giả..." />
+      <button class="btn primary">Tìm</button>
+    </div>
+    <table class="wf">
+      <thead>
+        <tr>
+          <th style="width:120px;">Mã</th>
+          <th>Tên đề tài</th>
+          <th style="width:160px;">Hội đồng</th>
+          <th style="width:140px;">Chuyên ngành</th>
+          <th style="width:140px;">Thời gian thực hiện</th>
+          <th style="width:160px;">Tác giả</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ĐT-2025-112</td><td>Ứng dụng AI trong chẩn đoán hình ảnh X-quang phổi</td><td>HĐKH BV X</td><td>Chẩn đoán hình ảnh</td><td>06/2025 - 03/2026</td><td>BS. Phạm Văn D</td></tr>
+        <tr><td>ĐT-2025-105</td><td>Khảo sát hài lòng người bệnh nội trú</td><td>HĐKH BV X</td><td>QL bệnh viện</td><td>04/2025 - 12/2025</td><td>BS. Hoàng Thị F</td></tr>
+        <tr><td>ĐT-2025-098</td><td>Hiệu quả vaccine X trên trẻ em</td><td>HĐ Đạo đức</td><td>Nhi</td><td>06/2025 - 03/2026</td><td>BS. Trần Thị G</td></tr>
+      </tbody>
+    </table>
+    <div class="text-right mt-12"><a href="#" class="small">Xem tất cả & tra cứu nâng cao »</a></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Bạn muốn đăng ký đề tài NCKH?</div>
+    <p class="text-muted">Để đăng ký đề tài NCKH, bạn cần nâng cấp tài khoản hiện tại lên <b>tài khoản Tác giả</b>. Quy trình duyệt thường mất 1-3 ngày làm việc.</p>
+    <button class="btn primary mt-12">Yêu cầu nâng cấp lên Tác giả »</button>
+  </div>
+`,
+
+"user/profile": () => `
+  <div class="breadcrumb">Tài khoản / Thông tin tài khoản</div>
+  <div class="page-title">Thông tin tài khoản</div>
+  <div class="page-sub">F1.2.4 - F1.2.6 · Cập nhật profile, đổi mật khẩu, xác thực email</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Thông tin cá nhân</div>
+      <div class="field"><label>Họ tên</label><input class="input" value="Lê Minh Người Dùng" /></div>
+      <div class="field"><label>Email <span class="badge done">Đã xác thực</span></label><input class="input" value="lmu@bv.vn" /></div>
+      <div class="field"><label>Số điện thoại</label><input class="input" value="0912 345 678" /></div>
+      <div class="field"><label>Đơn vị công tác</label><input class="input" value="Khoa Dược - BV X" /></div>
+      <div class="field"><label>Chức vụ</label><input class="input" value="Dược sĩ" /></div>
+      <button class="btn primary">Lưu thay đổi</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Bảo mật</div>
+      <div class="field"><label>Mật khẩu hiện tại</label><input class="input" type="password" /></div>
+      <div class="field"><label>Mật khẩu mới</label><input class="input" type="password" /></div>
+      <div class="field"><label>Nhập lại mật khẩu mới</label><input class="input" type="password" /></div>
+      <button class="btn primary">Đổi mật khẩu</button>
+      <hr class="divider">
+      <div class="field"><label>Xác thực 2 lớp</label><button class="btn sm">Bật</button></div>
+    </div>
+  </div>
+`,
+
+"user/search": () => `
+  <div class="breadcrumb">Tra cứu / Đề tài</div>
+  <div class="page-title">Tra cứu đề tài NCKH</div>
+  <div class="page-sub">F7.1.1 - F7.1.3 · Tra cứu theo mã / tên / từ khóa / nhóm dữ liệu</div>
+  <div class="card">
+    <div class="search-bar">
+      <input class="input" placeholder="🔍 Nhập từ khóa: tên đề tài, mã, tác giả..." />
+      <button class="btn primary">Tìm kiếm</button>
+    </div>
+    <div class="grid-4">
+      <div class="field"><label>Chuyên ngành</label><select class="select"><option>Tất cả</option><option>Nội khoa</option><option>Ngoại khoa</option><option>Nhi</option><option>Dược</option></select></div>
+      <div class="field"><label>Hội đồng</label><select class="select"><option>Tất cả</option><option>HĐKH BV X</option><option>HĐKH Khoa Dược</option></select></div>
+      <div class="field"><label>Thời gian thực hiện - Từ</label><input class="input" type="date" /></div>
+      <div class="field"><label>Đến</label><input class="input" type="date" /></div>
+    </div>
+    <div class="grid-3">
+      <div class="field"><label>Tác giả</label><input class="input" placeholder="Họ tên tác giả..." /></div>
+      <div class="field"><label>Trạng thái</label><select class="select"><option>Đã công bố</option><option>Đang nghiên cứu</option></select></div>
+      <div class="field"><label>Năm cấp chứng nhận</label><select class="select"><option>Tất cả</option><option>2026</option><option>2025</option></select></div>
+    </div>
+    <button class="btn">Đặt lại bộ lọc</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Kết quả (12 đề tài) <button class="btn sm">Xuất Excel</button></div>
+    <table class="wf">
+      <thead>
+        <tr>
+          <th style="width:120px;">Mã đề tài</th>
+          <th>Tên đề tài</th>
+          <th style="width:160px;">Hội đồng</th>
+          <th style="width:140px;">Chuyên ngành</th>
+          <th style="width:140px;">Thời gian thực hiện</th>
+          <th style="width:160px;">Tác giả</th>
+          <th style="width:80px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ĐT-2025-112</td><td>Ứng dụng AI trong chẩn đoán hình ảnh X-quang phổi</td><td>HĐKH BV X</td><td>Chẩn đoán hình ảnh</td><td>06/2025 - 03/2026</td><td>BS. Phạm Văn D</td><td><button class="btn sm">Xem</button></td></tr>
+        <tr><td>ĐT-2025-098</td><td>Hiệu quả vaccine X trên trẻ em dưới 5 tuổi</td><td>HĐ Đạo đức</td><td>Nhi</td><td>06/2025 - 03/2026</td><td>BS. Trần Thị G</td><td><button class="btn sm">Xem</button></td></tr>
+        <tr><td>ĐT-2024-145</td><td>So sánh phương pháp PT mở vs nội soi viêm ruột thừa</td><td>HĐKH BV X</td><td>Ngoại khoa</td><td>03/2024 - 11/2024</td><td>BS. Lý Văn H</td><td><button class="btn sm">Xem</button></td></tr>
+        <tr><td>ĐT-2024-077</td><td>Đánh giá kết quả điều trị THA bằng phối hợp 3 thuốc</td><td>HĐKH Khoa Nội</td><td>Nội khoa</td><td>01/2024 - 12/2024</td><td>BS. Nguyễn Văn A</td><td><button class="btn sm">Xem</button></td></tr>
+        <tr><td>ĐT-2023-045</td><td>Khảo sát sử dụng kháng sinh dự phòng sau PT</td><td>HĐKH Khoa Dược</td><td>Dược lâm sàng</td><td>05/2023 - 10/2023</td><td>BS. Nguyễn Văn A</td><td><button class="btn sm">Xem</button></td></tr>
+      </tbody>
+    </table>
+    <div class="mt-12 text-muted small">Hiển thị 1-5 / 12 đề tài</div>
+  </div>
+`,
+
+"user/reports-public": () => `
+  <div class="breadcrumb">Tra cứu / Báo cáo công khai</div>
+  <div class="page-title">Báo cáo thống kê công khai</div>
+  <div class="page-sub">Phần dữ liệu được công bố trong M6</div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">Đề tài theo năm</div><div class="placeholder chart-ph">[ Line chart 2020-2026 ]</div></div>
+    <div class="card"><div class="card-title">Tỉ lệ đề tài theo chuyên ngành</div><div class="placeholder chart-ph">[ Pie chart ]</div></div>
+  </div>
+`,
+
+"user/guides": () => `
+  <div class="breadcrumb">Tra cứu / Hướng dẫn</div>
+  <div class="page-title">Hướng dẫn & Biểu mẫu</div>
+  <div class="page-sub">F2.9 · Tải biểu mẫu và đọc hướng dẫn đăng ký</div>
+  <table class="wf">
+    <thead><tr><th>Tên</th><th>Loại</th><th>File</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Hướng dẫn đăng ký đề tài NCKH 2026</td><td>Hướng dẫn</td><td>📎 PDF (2.1 MB)</td><td><button class="btn sm">Tải</button></td></tr>
+      <tr><td>Biểu mẫu đề cương NCKH</td><td>Biểu mẫu</td><td>📎 DOCX (180 KB)</td><td><button class="btn sm">Tải</button></td></tr>
+      <tr><td>Biểu mẫu báo cáo nghiệm thu</td><td>Biểu mẫu</td><td>📎 DOCX (210 KB)</td><td><button class="btn sm">Tải</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"user/upgrade": () => `
+  <div class="breadcrumb">Tài khoản / Nâng cấp lên Tác giả</div>
+  <div class="page-title">Yêu cầu nâng cấp tài khoản → Tác giả NCKH</div>
+  <div class="page-sub">F1.2.7 · Nâng cấp tài khoản người dùng → tài khoản tác giả</div>
+  <div class="card">
+    <p class="text-muted mb-8">Để đăng ký đề tài NCKH, vui lòng cung cấp các thông tin bổ sung dưới đây. Yêu cầu sẽ được Admin duyệt trong 1-3 ngày làm việc.</p>
+    <div class="grid-2">
+      <div class="field"><label>Học hàm/học vị <span class="req">*</span></label><select class="select"><option>BS</option><option>ThS</option><option>TS</option><option>PGS</option><option>GS</option></select></div>
+      <div class="field"><label>Chuyên ngành chính <span class="req">*</span></label><select class="select"><option>Nội khoa</option><option>Ngoại khoa</option><option>Dược</option></select></div>
+      <div class="field"><label>Số CCHN (nếu có)</label><input class="input" /></div>
+      <div class="field"><label>Năm tốt nghiệp</label><input class="input" /></div>
+    </div>
+    <div class="field"><label>File minh chứng (CCHN, bằng cấp...)</label><input class="input" type="file" multiple /></div>
+    <div class="field"><label>Lý do đăng ký</label><textarea class="textarea" placeholder="Mô tả ngắn lý do và định hướng nghiên cứu..."></textarea></div>
+    <button class="btn primary">Gửi yêu cầu nâng cấp</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Lịch sử yêu cầu</div>
+    <table class="wf">
+      <thead><tr><th>Ngày gửi</th><th>Trạng thái</th><th>Người duyệt</th><th>Ghi chú</th></tr></thead>
+      <tbody><tr><td>—</td><td colspan="3" class="text-muted">Chưa có yêu cầu nào</td></tr></tbody>
+    </table>
+  </div>
+`,
+
+"user/notifications": () => `
+  <div class="breadcrumb">Tài khoản / Thông báo</div>
+  <div class="page-title">Thông báo của tôi</div>
+  <div class="page-sub">F7.2.1 - F7.2.2</div>
+  <div class="notif"><div class="notif-title">Cuộc họp Hội đồng KH tháng 5 sắp diễn ra</div><div class="notif-meta">10/05/2026 09:00 · Hội trường A · 2 ngày trước</div></div>
+  <div class="notif"><div class="notif-title">Hệ thống cập nhật biểu mẫu đề cương mới</div><div class="notif-meta">25/04/2026 · 3 ngày trước</div></div>
+  <div class="notif"><div class="notif-title">Đăng tải QĐ phê duyệt triển khai ĐT-2026-029</div><div class="notif-meta">16/04/2026 · 12 ngày trước</div></div>
+`,
+
+/* ========== AUTHOR (Tác giả) ========== */
+"author/dashboard": () => `
+  <div class="breadcrumb">Tổng quan / Dashboard cá nhân</div>
+  <div class="page-title">Dashboard tác giả</div>
+  <div class="page-sub">Xin chào, BS. Nguyễn Văn Tác Giả!</div>
+  <div class="grid-4">
+    <div class="stat"><div class="stat-num">3</div><div class="stat-lbl">Đề tài đang triển khai</div></div>
+    <div class="stat"><div class="stat-num">1</div><div class="stat-lbl">Chờ HĐ duyệt</div></div>
+    <div class="stat"><div class="stat-num">2</div><div class="stat-lbl">Đã nghiệm thu</div></div>
+    <div class="stat"><div class="stat-num">2</div><div class="stat-lbl">Chứng nhận đã nhận</div></div>
+  </div>
+  <div class="grid-2 mt-16">
+    <div class="card">
+      <div class="card-title">Tiến độ đề tài đang triển khai</div>
+      <table class="wf">
+        <thead><tr><th>Mã ĐT</th><th>Tên</th><th>Trạng thái</th><th>Hạn tiếp theo</th></tr></thead>
+        <tbody>
+          <tr><td>ĐT-2026-031</td><td>Nghiên cứu hiệu quả thuốc X...</td><td><span class="badge sent">Đã gửi</span></td><td>HĐ duyệt: 10/05</td></tr>
+          <tr><td>ĐT-2026-018</td><td>Khảo sát mức độ tuân thủ...</td><td><span class="badge approved">Đã duyệt</span></td><td>NT: T11/2026</td></tr>
+          <tr><td>ĐT-2025-099</td><td>Phác đồ chống đông...</td><td><span class="badge review">Đang chỉnh sửa</span></td><td>Nộp lại: 30/04</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Thông báo mới</div>
+      <div class="notif"><div class="notif-title">HĐ yêu cầu chỉnh sửa đề cương ĐT-2025-099</div><div class="notif-meta">2 ngày trước</div></div>
+      <div class="notif"><div class="notif-title">QĐ phê duyệt triển khai ĐT-2026-018 đã được đăng</div><div class="notif-meta">5 ngày trước</div></div>
+    </div>
+  </div>
+`,
+
+"author/profile": () => `
+  <div class="breadcrumb">Tổng quan / Hồ sơ tác giả</div>
+  <div class="page-title">Hồ sơ tác giả</div>
+  <div class="page-sub">F1.1.4 - F1.1.6</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Thông tin học vị</div>
+      <div class="field"><label>Họ tên</label><input class="input" value="Nguyễn Văn Tác Giả" /></div>
+      <div class="field"><label>Học hàm/vị</label><select class="select"><option>BS</option><option selected>ThS</option><option>TS</option></select></div>
+      <div class="field"><label>Chuyên ngành</label><input class="input" value="Nội khoa" /></div>
+      <div class="field"><label>Đơn vị</label><input class="input" value="Khoa Nội - BV X" /></div>
+      <div class="field"><label>CCHN</label><input class="input" value="0123456789" /></div>
+      <button class="btn primary">Lưu</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Liên hệ & bảo mật</div>
+      <div class="field"><label>Email <span class="badge done">Đã xác thực</span></label><input class="input" value="nva@bv.vn" /></div>
+      <div class="field"><label>Điện thoại</label><input class="input" value="0987 654 321" /></div>
+      <hr class="divider">
+      <button class="btn">Đổi mật khẩu</button>
+    </div>
+  </div>
+`,
+
+"author/topics": () => `
+  <div class="breadcrumb">Đề tài của tôi / Danh sách</div>
+  <div class="page-title">Đề tài của tôi <button class="btn sm primary">+ Đăng ký đề tài mới</button></div>
+  <div class="page-sub">F2.1.2 · CRUD đề tài đăng ký của tác giả</div>
+  <div class="search-bar">
+    <input class="input" placeholder="Tìm theo tên / mã..." />
+    <select class="select" style="max-width: 180px;"><option>Tất cả</option><option>Nháp</option><option>Đã gửi</option><option>Đang xét</option><option>Đã duyệt</option><option>Đang triển khai</option><option>Đã NT</option></select>
+    <button class="btn">Lọc</button>
+  </div>
+  <table class="wf">
+    <thead><tr><th>Mã</th><th>Tên đề tài</th><th>Năm</th><th>Trạng thái</th><th>Cập nhật cuối</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>—</td><td><i>(Nháp) Khảo sát chất lượng cuộc sống...</i></td><td>2026</td><td><span class="badge draft">Nháp</span></td><td>27/04/2026</td><td><button class="btn sm">Sửa</button> <button class="btn sm danger">Xóa</button></td></tr>
+      <tr><td>ĐT-2026-031</td><td>Nghiên cứu hiệu quả thuốc X...</td><td>2026</td><td><span class="badge sent">Đã gửi</span></td><td>28/04/2026</td><td><button class="btn sm">Xem</button></td></tr>
+      <tr><td>ĐT-2026-018</td><td>Khảo sát mức độ tuân thủ phác đồ...</td><td>2026</td><td><span class="badge approved">Đã duyệt</span></td><td>16/04/2026</td><td><button class="btn sm">Xem</button></td></tr>
+      <tr><td>ĐT-2025-099</td><td>Phác đồ chống đông sau PT...</td><td>2025</td><td><span class="badge rejected">Cần chỉnh sửa</span></td><td>26/04/2026</td><td><button class="btn sm">Sửa & Nộp lại</button></td></tr>
+      <tr><td>ĐT-2024-077</td><td>Đánh giá kết quả điều trị...</td><td>2024</td><td><span class="badge done">Đã NT + CN</span></td><td>15/12/2024</td><td><button class="btn sm">Xem</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"author/topic-new": () => `
+  <div class="breadcrumb">Đề tài của tôi / Đăng ký mới</div>
+  <div class="page-title">+ Đăng ký đề tài NCKH mới</div>
+  <div class="page-sub">F2.1.2 - F2.1.5</div>
+  <div class="card">
+    <div class="card-title">1. Thông tin chung</div>
+    <div class="field"><label>Tên đề tài <span class="req">*</span></label><input class="input" placeholder="Nhập tên đề tài..." /></div>
+    <div class="grid-2">
+      <div class="field"><label>Chuyên ngành <span class="req">*</span></label><select class="select"><option>-- Chọn --</option><option>Nội khoa</option><option>Ngoại khoa</option><option>Dược</option></select></div>
+      <div class="field"><label>Phân loại đề tài <span class="req">*</span></label><select class="select"><option>Cấp cơ sở</option><option>Cấp Bộ</option><option>Cấp Nhà nước</option></select></div>
+      <div class="field"><label>Năm thực hiện</label><input class="input" type="number" value="2026" /></div>
+      <div class="field"><label>Thời gian dự kiến</label><input class="input" placeholder="VD: 12 tháng" /></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">2. Tác giả & nhóm nghiên cứu</div>
+    <div class="field"><label>Tác giả chính</label><input class="input" value="Nguyễn Văn Tác Giả" disabled /></div>
+    <div class="field"><label>Đồng tác giả</label><div class="placeholder" style="min-height:60px;">[ Multi-select / Add người ]</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">3. Nội dung & ý tưởng (F2.1.3)</div>
+    <div class="field"><label>Mục tiêu nghiên cứu</label><textarea class="textarea"></textarea></div>
+    <div class="field"><label>Tổng quan tài liệu</label><textarea class="textarea"></textarea></div>
+    <div class="field"><label>Phương pháp nghiên cứu</label><textarea class="textarea"></textarea></div>
+    <div class="field"><label>Kết quả dự kiến</label><textarea class="textarea"></textarea></div>
+  </div>
+  <div class="card">
+    <div class="card-title">4. File đính kèm (F2.1.4)</div>
+    <div class="field"><label>Thuyết minh đề cương <span class="req">*</span></label><input class="input" type="file" /></div>
+    <div class="field"><label>Tài liệu khác</label><input class="input" type="file" multiple /></div>
+  </div>
+  <div class="text-right">
+    <button class="btn">Lưu nháp</button>
+    <button class="btn primary">Gửi đăng ký »</button>
+  </div>
+`,
+
+"author/topic-detail": () => `
+  <div class="breadcrumb">Đề tài của tôi / Chi tiết</div>
+  <div class="page-title">ĐT-2026-018 - Khảo sát mức độ tuân thủ phác đồ <span class="badge approved">Đã duyệt</span></div>
+  <div class="page-sub">Theo dõi tiến độ end-to-end</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Tiến độ đề tài</div>
+      <div class="timeline">
+        <div class="tl-item done"><div class="tl-title">Đăng ký đề tài</div><div class="tl-meta">10/03/2026</div></div>
+        <div class="tl-item done"><div class="tl-title">HĐ xét duyệt đề cương (HĐ-XD-03)</div><div class="tl-meta">15/04/2026 · KQ: Đạt</div></div>
+        <div class="tl-item done"><div class="tl-title">Cấp mã số ĐT-2026-018 + QĐ phê duyệt</div><div class="tl-meta">16/04/2026</div></div>
+        <div class="tl-item"><div class="tl-title">Đang triển khai NCKH</div><div class="tl-meta">Hạn nộp BC nghiệm thu: 30/10/2026</div></div>
+        <div class="tl-item"><div class="tl-title">Họp Hội đồng nghiệm thu</div><div class="tl-meta">Dự kiến T11/2026</div></div>
+        <div class="tl-item"><div class="tl-title">Cấp chứng nhận</div><div class="tl-meta">Sau nghiệm thu</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Thông tin đề tài</div>
+      <p><b>Mã:</b> ĐT-2026-018</p>
+      <p><b>Chuyên ngành:</b> Dược lâm sàng</p>
+      <p><b>Tác giả chính:</b> Nguyễn Văn Tác Giả</p>
+      <p><b>HĐ phụ trách:</b> HĐKH Khoa Dược</p>
+      <p><b>Kinh phí được cấp:</b> 50.000.000 VND (F2.8.4)</p>
+      <hr class="divider">
+      <p><b>File đính kèm:</b></p>
+      <p>📎 ThuyetMinh_DT018.pdf</p>
+      <p>📎 QD-PD-018.pdf</p>
+      <button class="btn primary mt-12">Nộp báo cáo nghiệm thu »</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Yêu cầu chỉnh sửa từ HĐ (nếu có)</div>
+    <p class="text-muted">Chưa có yêu cầu nào.</p>
+  </div>
+`,
+
+"author/review-result": () => `
+  <div class="breadcrumb">Kết quả / Xét duyệt đề cương</div>
+  <div class="page-title">Kết quả xét duyệt đề cương</div>
+  <table class="wf">
+    <thead><tr><th>Mã</th><th>Tên đề tài</th><th>HĐ</th><th>Ngày xét</th><th>Kết quả</th><th>Yêu cầu CS</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>ĐT-2026-018</td><td>Khảo sát mức độ tuân thủ...</td><td>HĐ-XD-03</td><td>15/04/2026</td><td><span class="badge approved">Đạt</span></td><td>—</td><td><button class="btn sm">Xem</button></td></tr>
+      <tr><td>ĐT-2025-099</td><td>Phác đồ chống đông sau PT...</td><td>HĐ-XD-02</td><td>10/03/2026</td><td><span class="badge rejected">Cần chỉnh sửa</span></td><td>Bổ sung phương pháp thống kê, mở rộng cỡ mẫu</td><td><button class="btn sm primary">Sửa & nộp lại</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"author/final-result": () => `
+  <div class="breadcrumb">Kết quả / Nghiệm thu</div>
+  <div class="page-title">Kết quả nghiệm thu</div>
+  <table class="wf">
+    <thead><tr><th>Mã</th><th>Tên đề tài</th><th>HĐ NT</th><th>Ngày NT</th><th>Điểm</th><th>Xếp loại</th><th>QĐ NT</th></tr></thead>
+    <tbody>
+      <tr><td>ĐT-2024-077</td><td>Đánh giá kết quả điều trị...</td><td>HĐ-NT-09</td><td>15/12/2024</td><td>87/100</td><td><span class="badge done">Xuất sắc</span></td><td>📎 Tải</td></tr>
+    </tbody>
+  </table>
+`,
+
+"author/certs": () => `
+  <div class="breadcrumb">Kết quả / Chứng nhận của tôi</div>
+  <div class="page-title">Chứng nhận của tôi</div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title">CN-2024-077</div><div class="placeholder" style="min-height:160px;">[ Preview chứng nhận PDF ]</div><div class="mt-12 btn-group"><button class="btn primary">Tải PDF</button> <button class="btn">In</button></div></div>
+    <div class="card"><div class="card-title">CN-2023-045</div><div class="placeholder" style="min-height:160px;">[ Preview chứng nhận PDF ]</div><div class="mt-12 btn-group"><button class="btn primary">Tải PDF</button> <button class="btn">In</button></div></div>
+  </div>
+`,
+
+"author/search": () => `
+  <div class="breadcrumb">Tra cứu</div>
+  <div class="page-title">Tra cứu đề tài</div>
+  <div class="page-sub">F7.1 · Giống tra cứu của Người dùng + thấy thêm trạng thái nội bộ</div>
+  <div class="card">
+    <div class="search-bar">
+      <input class="input" placeholder="🔍 Nhập từ khóa..." />
+      <button class="btn primary">Tìm kiếm</button>
+    </div>
+    <div class="grid-4">
+      <div class="field"><label>Chuyên ngành</label><select class="select"><option>Tất cả</option></select></div>
+      <div class="field"><label>Hội đồng</label><select class="select"><option>Tất cả</option></select></div>
+      <div class="field"><label>Tác giả</label><input class="input" /></div>
+      <div class="field"><label>Thời gian thực hiện</label><input class="input" placeholder="2025-2026" /></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Kết quả</div>
+    <table class="wf">
+      <thead>
+        <tr>
+          <th style="width:120px;">Mã</th>
+          <th>Tên đề tài</th>
+          <th style="width:160px;">Hội đồng</th>
+          <th style="width:140px;">Chuyên ngành</th>
+          <th style="width:140px;">Thời gian thực hiện</th>
+          <th style="width:160px;">Tác giả</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ĐT-2025-112</td><td>Ứng dụng AI trong chẩn đoán hình ảnh</td><td>HĐKH BV X</td><td>CĐHA</td><td>06/2025 - 03/2026</td><td>BS. Phạm V.D</td></tr>
+        <tr><td>ĐT-2024-145</td><td>So sánh PT mở vs nội soi viêm ruột thừa</td><td>HĐKH BV X</td><td>Ngoại khoa</td><td>03/2024 - 11/2024</td><td>BS. Lý V.H</td></tr>
+      </tbody>
+    </table>
+  </div>
+`,
+
+"author/guides": () => `
+  <div class="breadcrumb">Hỗ trợ / Hướng dẫn</div>
+  <div class="page-title">Hướng dẫn & Biểu mẫu</div>
+  <table class="wf">
+    <thead><tr><th>Tên</th><th>Loại</th><th>File</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Hướng dẫn đăng ký đề tài 2026</td><td>HD</td><td>📎 PDF</td><td><button class="btn sm">Tải</button></td></tr>
+      <tr><td>Biểu mẫu đề cương</td><td>BM</td><td>📎 DOCX</td><td><button class="btn sm">Tải</button></td></tr>
+      <tr><td>Biểu mẫu báo cáo nghiệm thu</td><td>BM</td><td>📎 DOCX</td><td><button class="btn sm">Tải</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"author/notifications": () => `
+  <div class="breadcrumb">Hỗ trợ / Thông báo</div>
+  <div class="page-title">Thông báo</div>
+  <div class="notif"><div class="notif-title">HĐ yêu cầu chỉnh sửa đề cương ĐT-2025-099</div><div class="notif-meta">26/04/2026 · 2 ngày trước</div></div>
+  <div class="notif"><div class="notif-title">Bạn được mời tham gia báo cáo nghiệm thu HĐ-NT-13 (25/05/2026)</div><div class="notif-meta">20/04/2026</div></div>
+  <div class="notif"><div class="notif-title">QĐ phê duyệt triển khai ĐT-2026-018 đã được đăng</div><div class="notif-meta">16/04/2026</div></div>
+`,
+
+/* ========== COUNCIL (Hội đồng) ========== */
+"council/dashboard": () => `
+  <div class="breadcrumb">Tổng quan / Dashboard hội đồng</div>
+  <div class="page-title">Dashboard hội đồng</div>
+  <div class="page-sub">PGS.TS Phạm Hội Đồng · Phó Chủ tịch HĐKH</div>
+  <div class="grid-4">
+    <div class="stat"><div class="stat-num">2</div><div class="stat-lbl">Cuộc họp sắp tới</div></div>
+    <div class="stat"><div class="stat-num">7</div><div class="stat-lbl">Đề tài chờ xét duyệt</div></div>
+    <div class="stat"><div class="stat-num">2</div><div class="stat-lbl">Đề tài chờ nghiệm thu</div></div>
+    <div class="stat"><div class="stat-num">15</div><div class="stat-lbl">Đề tài đã xét trong năm</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Việc cần làm</div>
+    <table class="wf">
+      <thead><tr><th>Loại</th><th>Đề tài</th><th>Hạn</th><th>Cuộc họp</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>Xét duyệt đề cương</td><td>ĐT-2026-031 - Nghiên cứu hiệu quả thuốc X</td><td>10/05/2026</td><td>HĐ-XD-05</td><td><button class="btn sm primary">Mở form</button></td></tr>
+        <tr><td>Xét duyệt đề cương</td><td>ĐT-2026-032 - So sánh 2 phương pháp...</td><td>10/05/2026</td><td>HĐ-XD-05</td><td><button class="btn sm primary">Mở form</button></td></tr>
+        <tr><td>Nghiệm thu</td><td>ĐT-2025-098 - Hiệu quả vaccine X</td><td>25/05/2026</td><td>HĐ-NT-13</td><td><button class="btn sm primary">Chấm điểm</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+`,
+
+"council/profile": () => `
+  <div class="breadcrumb">Tổng quan / Hồ sơ</div>
+  <div class="page-title">Hồ sơ thành viên hội đồng</div>
+  <div class="card">
+    <div class="grid-2">
+      <div class="field"><label>Họ tên</label><input class="input" value="Phạm Hội Đồng" /></div>
+      <div class="field"><label>Học hàm/vị</label><input class="input" value="PGS.TS" /></div>
+      <div class="field"><label>Đơn vị</label><input class="input" value="BV Bạch Mai" /></div>
+      <div class="field"><label>Vai trò trong HĐ</label><input class="input" value="Phó Chủ tịch HĐKH" disabled /></div>
+      <div class="field"><label>Chuyên ngành</label><input class="input" value="Ngoại khoa" /></div>
+      <div class="field"><label>Email</label><input class="input" value="phd@bv.vn" /></div>
+    </div>
+    <button class="btn primary">Lưu</button> <button class="btn">Đổi mật khẩu</button>
+  </div>
+`,
+
+"council/meetings": () => `
+  <div class="breadcrumb">Công việc / Lịch họp</div>
+  <div class="page-title">Lịch họp được phân công</div>
+  <table class="wf">
+    <thead><tr><th>Mã</th><th>Loại</th><th>Tên cuộc họp</th><th>Thời gian</th><th>Địa điểm</th><th>Số đề tài</th><th>Vai trò</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>HĐ-XD-05</td><td>Xét duyệt</td><td>Họp HĐKH xét duyệt T5/2026</td><td>10/05/2026 09:00</td><td>Hội trường A</td><td>7</td><td>Phó CT</td><td><button class="btn sm">Xem chi tiết</button></td></tr>
+      <tr><td>HĐ-NT-13</td><td>Nghiệm thu</td><td>Nghiệm thu đợt 1/2026</td><td>25/05/2026 14:00</td><td>Hội trường A</td><td>2</td><td>Ủy viên</td><td><button class="btn sm">Xem chi tiết</button></td></tr>
+      <tr><td>HĐ-XD-04</td><td>Xét duyệt</td><td>Họp HĐKH T4/2026</td><td>15/04/2026</td><td>Hội trường A</td><td>5</td><td>Phó CT</td><td><button class="btn sm">Xem KQ</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"council/review-list": () => `
+  <div class="breadcrumb">Công việc / Đề tài cần xét duyệt</div>
+  <div class="page-title">Đề tài cần xét duyệt đề cương</div>
+  <div class="page-sub">Cuộc họp HĐ-XD-05 · 10/05/2026</div>
+  <table class="wf">
+    <thead><tr><th>STT</th><th>Mã ĐT</th><th>Tên đề tài</th><th>Tác giả</th><th>Chuyên ngành</th><th>File</th><th>Trạng thái xét</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>ĐT-2026-031</td><td>Nghiên cứu hiệu quả thuốc X</td><td>BS. Nguyễn V.A</td><td>Nội</td><td>📎 PDF</td><td><span class="badge draft">Chưa xét</span></td><td><button class="btn sm primary">Xét duyệt</button></td></tr>
+      <tr><td>2</td><td>ĐT-2026-032</td><td>So sánh 2 phương pháp PT...</td><td>BS. Lê V.B</td><td>Ngoại</td><td>📎 PDF</td><td><span class="badge draft">Chưa xét</span></td><td><button class="btn sm primary">Xét duyệt</button></td></tr>
+      <tr><td>3</td><td>ĐT-2026-033</td><td>Đánh giá tác dụng phụ vaccine</td><td>BS. Trần T.C</td><td>Nhi</td><td>📎 PDF</td><td><span class="badge sent">Đã ý kiến</span></td><td><button class="btn sm">Sửa</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"council/review-form": () => `
+  <div class="breadcrumb">Công việc / Form xét duyệt</div>
+  <div class="page-title">Form xét duyệt đề cương: ĐT-2026-031</div>
+  <div class="page-sub">F2.5.1 - F2.5.3 · Nhập kết quả + yêu cầu chỉnh sửa + gửi TB</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Thông tin đề tài</div>
+      <p><b>Tên:</b> Nghiên cứu hiệu quả thuốc X trong điều trị Y</p>
+      <p><b>Tác giả:</b> BS. Nguyễn Văn A · Khoa Nội</p>
+      <p><b>Chuyên ngành:</b> Nội khoa</p>
+      <p><b>Phân loại:</b> Cấp cơ sở</p>
+      <hr class="divider">
+      <p><b>File đề cương:</b> 📎 ThuyetMinh.pdf <button class="btn sm">Xem</button></p>
+      <div class="placeholder" style="min-height: 240px;">[ Preview PDF đề cương ]</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Đánh giá của Hội đồng</div>
+      <div class="field"><label>Tính cấp thiết / khoa học (1-10)</label><input class="input" type="number" min="1" max="10" /></div>
+      <div class="field"><label>Phương pháp nghiên cứu (1-10)</label><input class="input" type="number" min="1" max="10" /></div>
+      <div class="field"><label>Tính khả thi (1-10)</label><input class="input" type="number" min="1" max="10" /></div>
+      <div class="field"><label>Đạo đức nghiên cứu (1-10)</label><input class="input" type="number" min="1" max="10" /></div>
+      <div class="field"><label>Kết luận <span class="req">*</span></label><select class="select"><option>-- Chọn --</option><option>Đạt - cho phép triển khai</option><option>Đạt - yêu cầu chỉnh sửa nhỏ</option><option>Cần chỉnh sửa lớn - báo cáo lại</option><option>Không đạt</option></select></div>
+      <div class="field"><label>Ý kiến cụ thể / Yêu cầu chỉnh sửa</label><textarea class="textarea" placeholder="Bổ sung phương pháp thống kê, mở rộng cỡ mẫu lên ≥200..."></textarea></div>
+      <div class="field"><label>Tài liệu đính kèm (nếu có)</label><input class="input" type="file" /></div>
+      <div class="text-right"><button class="btn">Lưu nháp</button> <button class="btn primary">Gửi kết quả & TB tác giả »</button></div>
+    </div>
+  </div>
+`,
+
+"council/final-list": () => `
+  <div class="breadcrumb">Công việc / Đề tài cần nghiệm thu</div>
+  <div class="page-title">Đề tài cần nghiệm thu</div>
+  <div class="page-sub">Cuộc họp HĐ-NT-13 · 25/05/2026</div>
+  <table class="wf">
+    <thead><tr><th>STT</th><th>Mã ĐT</th><th>Tên</th><th>Tác giả</th><th>BC NT</th><th>Đã chấm</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>ĐT-2025-098</td><td>Hiệu quả vaccine X trên trẻ em</td><td>BS. Trần T.G</td><td>📎 BCNT.pdf</td><td><span class="badge draft">Chưa</span></td><td><button class="btn sm primary">Chấm điểm</button></td></tr>
+      <tr><td>2</td><td>ĐT-2025-105</td><td>Khảo sát hài lòng người bệnh</td><td>BS. Hoàng T.F</td><td>📎 BCNT.pdf</td><td><span class="badge sent">Đã chấm</span></td><td><button class="btn sm">Sửa</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"council/final-form": () => `
+  <div class="breadcrumb">Công việc / Form nghiệm thu</div>
+  <div class="page-title">Form nghiệm thu & chấm điểm: ĐT-2025-098</div>
+  <div class="page-sub">F2.7.1 + F2.8 · Áp dụng công cụ đánh giá đã cấu hình</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Thông tin đề tài</div>
+      <p><b>Tên:</b> Hiệu quả vaccine X trên trẻ em dưới 5 tuổi</p>
+      <p><b>Tác giả:</b> BS. Trần Thị G · Khoa Nhi</p>
+      <p><b>Triển khai:</b> 06/2025 - 03/2026</p>
+      <hr class="divider">
+      <p><b>Báo cáo nghiệm thu:</b> 📎 BCNT_098.pdf</p>
+      <div class="placeholder" style="min-height: 240px;">[ Preview PDF báo cáo NT ]</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Phiếu chấm điểm (theo công cụ ĐG đã cấu hình - F2.8.2)</div>
+      <table class="wf">
+        <thead><tr><th>Tiêu chí</th><th>Trọng số</th><th>Điểm (0-10)</th><th>Tổng</th></tr></thead>
+        <tbody>
+          <tr><td>Tính khoa học, sáng tạo</td><td>20%</td><td><input class="input" type="number" /></td><td>—</td></tr>
+          <tr><td>Phương pháp & dữ liệu</td><td>25%</td><td><input class="input" type="number" /></td><td>—</td></tr>
+          <tr><td>Kết quả & đóng góp</td><td>30%</td><td><input class="input" type="number" /></td><td>—</td></tr>
+          <tr><td>Khả năng ứng dụng</td><td>15%</td><td><input class="input" type="number" /></td><td>—</td></tr>
+          <tr><td>Trình bày báo cáo</td><td>10%</td><td><input class="input" type="number" /></td><td>—</td></tr>
+        </tbody>
+        <tfoot><tr><th colspan="3" class="text-right">TỔNG ĐIỂM</th><th>—</th></tr></tfoot>
+      </table>
+      <div class="field mt-12"><label>Xếp loại</label><select class="select"><option>Xuất sắc (≥85)</option><option>Khá (70-84)</option><option>Đạt (50-69)</option><option>Không đạt (&lt;50)</option></select></div>
+      <div class="field"><label>Yêu cầu chỉnh sửa (nếu có)</label><textarea class="textarea"></textarea></div>
+      <div class="field"><label>Đề xuất cấp chứng nhận?</label><select class="select"><option>Có</option><option>Không</option></select></div>
+      <div class="text-right"><button class="btn">Lưu nháp</button> <button class="btn primary">Gửi kết quả »</button></div>
+    </div>
+  </div>
+`,
+
+"council/topics-history": () => `
+  <div class="breadcrumb">Hỗ trợ / Lịch sử đề tài đã xét</div>
+  <div class="page-title">Lịch sử đề tài đã xét</div>
+  <table class="wf">
+    <thead><tr><th>Mã</th><th>Tên</th><th>Loại</th><th>Ngày xét</th><th>KQ</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>ĐT-2026-029</td><td>Đánh giá phẫu thuật nội soi</td><td>Xét duyệt</td><td>15/04/2026</td><td><span class="badge approved">Đạt</span></td><td><button class="btn sm">Xem</button></td></tr>
+      <tr><td>ĐT-2025-112</td><td>Ứng dụng AI trong CĐHA</td><td>Nghiệm thu</td><td>20/03/2026</td><td><span class="badge done">87đ - Xuất sắc</span></td><td><button class="btn sm">Xem</button></td></tr>
+    </tbody>
+  </table>
+`,
+
+"council/search": () => `
+  <div class="breadcrumb">Hỗ trợ / Tra cứu</div>
+  <div class="page-title">Tra cứu đề tài</div>
+  <div class="card">
+    <div class="search-bar">
+      <input class="input" placeholder="🔍 Nhập từ khóa: tên đề tài, mã, tác giả..." />
+      <button class="btn primary">Tìm</button>
+    </div>
+    <div class="grid-4">
+      <div class="field"><label>Chuyên ngành</label><select class="select"><option>Tất cả</option></select></div>
+      <div class="field"><label>Hội đồng</label><select class="select"><option>Tất cả</option><option>HĐ của tôi</option></select></div>
+      <div class="field"><label>Tác giả</label><input class="input" /></div>
+      <div class="field"><label>Thời gian thực hiện</label><input class="input" placeholder="2025-2026" /></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Kết quả</div>
+    <table class="wf">
+      <thead>
+        <tr>
+          <th style="width:120px;">Mã</th>
+          <th>Tên đề tài</th>
+          <th style="width:160px;">Hội đồng</th>
+          <th style="width:140px;">Chuyên ngành</th>
+          <th style="width:140px;">Thời gian thực hiện</th>
+          <th style="width:160px;">Tác giả</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ĐT-2026-029</td><td>Đánh giá phẫu thuật nội soi</td><td>HĐKH BV X</td><td>Ngoại khoa</td><td>05/2026 - 04/2027</td><td>BS. Lê V.B</td></tr>
+        <tr><td>ĐT-2025-112</td><td>Ứng dụng AI trong CĐHA</td><td>HĐKH BV X</td><td>CĐHA</td><td>06/2025 - 03/2026</td><td>BS. Phạm V.D</td></tr>
+      </tbody>
+    </table>
+  </div>
+`,
+
+"council/notifications": () => `
+  <div class="breadcrumb">Hỗ trợ / Thông báo</div>
+  <div class="page-title">Thông báo</div>
+  <div class="notif"><div class="notif-title">Bạn được phân công xét duyệt 7 đề tài tại HĐ-XD-05</div><div class="notif-meta">20/04/2026</div></div>
+  <div class="notif"><div class="notif-title">Cuộc họp HĐ-NT-13 sẽ diễn ra ngày 25/05/2026</div><div class="notif-meta">20/04/2026</div></div>
+`,
+
+}; // end SCREENS
+
+let currentRole = "guest";
+let currentScreen = "guest/home";
+
+function renderSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const nav = NAV[currentRole];
+  let html = "";
+  for (const grp of nav) {
+    html += `<h4>${grp.group}</h4>`;
+    for (const it of grp.items) {
+      const active = it.key === currentScreen ? "active" : "";
+      html += `<a class="nav-item ${active}" data-key="${it.key}">${it.label}</a>`;
+    }
+  }
+  sidebar.innerHTML = html;
+  sidebar.querySelectorAll(".nav-item[data-key]").forEach(el => {
+    el.addEventListener("click", () => {
+      currentScreen = el.dataset.key;
+      renderSidebar();
+      renderMain();
+    });
+  });
+}
+
+function renderMain() {
+  const main = document.getElementById("main");
+  const fn = SCREENS[currentScreen];
+  if (fn) {
+    main.innerHTML = fn();
+  } else {
+    main.innerHTML = `<div class="card"><div class="card-title">Màn hình "${currentScreen}"</div><div class="placeholder">[ Wireframe đang được phát triển ]</div></div>`;
+  }
+  window.scrollTo(0, 0);
+}
+
+function renderUserInfo() {
+  const u = ROLE_USER[currentRole];
+  document.getElementById("userName").textContent = u.name;
+  document.getElementById("avatar").textContent = u.avatar;
+  document.getElementById("roleRibbon").textContent = u.ribbon;
+}
+
+function setRole(role) {
+  currentRole = role;
+  currentScreen = NAV[role][0].items[0].key;
+  document.querySelectorAll(".role-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.role === role);
+  });
+  renderUserInfo();
+  renderSidebar();
+  renderMain();
+}
+
+document.getElementById("roleSwitcher").addEventListener("click", (e) => {
+  if (e.target.matches(".role-btn")) {
+    setRole(e.target.dataset.role);
+  }
+});
+
+setRole("guest");
+</script>
+</body>
+</html>
