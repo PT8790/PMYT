@@ -73,6 +73,39 @@
   .notif { padding: 10px 12px; border: 1px solid #d1d5db; border-left: 4px solid #111; margin-bottom: 8px; background: #fff; }
   .notif-title { font-weight: 600; font-size: 12px; }
   .notif-meta { color: #6b7280; font-size: 11px; margin-top: 2px; }
+  /* ===== State Lifecycle (24 trạng thái) ===== */
+  .state-banner { background: linear-gradient(90deg, #fef9c3 0%, #fef3c7 100%); border: 2px solid #d97706; border-radius: 4px; padding: 14px 18px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .banner-label { font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: .5px; font-weight: 600; }
+  .banner-title { font-size: 18px; font-weight: 700; color: #111; margin: 2px 0; }
+  .banner-meta { font-size: 12px; color: #374151; }
+  .banner-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .phase-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 14px; }
+  .phase-step { padding: 8px 6px; border: 1px solid #d1d5db; border-radius: 3px; text-align: center; font-size: 11px; background: #fafafa; position: relative; }
+  .phase-step.done { background: #dcfce7; border-color: #15803d; color: #166534; }
+  .phase-step.current { background: #fef08a; border-color: #d97706; color: #854d0e; font-weight: 700; box-shadow: 0 0 0 2px rgba(217,119,6,0.25); }
+  .phase-step .step-num { font-size: 14px; font-weight: 700; display: block; }
+  .phase-block { border: 1px solid #d1d5db; border-radius: 4px; margin-bottom: 10px; overflow: hidden; }
+  .phase-header { background: #f9fafb; padding: 8px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .phase-header.done { background: #f0fdf4; border-bottom-color: #bbf7d0; }
+  .phase-header.current { background: #fef9c3; border-bottom-color: #fde68a; }
+  .phase-header.skipped { background: #f3f4f6; color: #6b7280; }
+  .phase-num { font-size: 16px; font-weight: 700; color: #2563eb; min-width: 24px; }
+  .phase-name { flex: 1; }
+  .phase-body { padding: 4px 14px 6px; background: #fff; }
+  .state-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px dashed #e5e7eb; }
+  .state-row:last-child { border-bottom: none; }
+  .state-id { width: 38px; font-weight: 700; font-size: 11px; color: #6b7280; text-align: center; padding: 3px 4px; background: #f3f4f6; border-radius: 3px; flex-shrink: 0; }
+  .state-row.done .state-id { background: #dcfce7; color: #166534; }
+  .state-row.current .state-id { background: #fef08a; color: #854d0e; box-shadow: 0 0 0 2px rgba(217,119,6,0.35); }
+  .state-row.blocked .state-id { background: #fee2e2; color: #991b1b; }
+  .state-row.optional .state-id { background: #e0e7ff; color: #3730a3; }
+  .state-info { flex: 1; min-width: 0; }
+  .state-title { font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .state-row.current .state-title::after { content: "◀ Đang ở đây"; color: #d97706; font-size: 11px; font-weight: 700; padding: 1px 6px; background: #fef08a; border-radius: 3px; }
+  .state-meta { font-size: 11px; color: #6b7280; margin-top: 2px; }
+  .state-actor { font-size: 11px; color: #2563eb; }
+  .state-action { display: flex; gap: 4px; flex-shrink: 0; }
+  .state-icon { font-size: 14px; width: 18px; text-align: center; }
   .search-bar { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
   .search-bar .input { flex: 1; min-width: 200px; }
   .role-ribbon { font-size: 10px; padding: 2px 8px; background: #111; color: #fff; border-radius: 2px; letter-spacing: 1px; }
@@ -116,11 +149,9 @@ const NAV = {
     { group: "TRANG CÔNG KHAI", items: [
       { key: "guest/home", label: "Trang chủ - Đề tài công khai" },
     ]},
-    { group: "TÀI KHOẢN", items: [
-      { key: "guest/login", label: "Đăng nhập" },
-      { key: "guest/register-user", label: "Đăng ký tài khoản Người dùng" },
-      { key: "guest/register-author", label: "Đăng ký tài khoản Tác giả" },
-      { key: "guest/forgot", label: "Quên mật khẩu" },
+    { group: "ĐĂNG NHẬP", items: [
+      { key: "guest/login", label: "Đăng nhập (Email / Google)" },
+      { key: "guest/setup-profile", label: "Cập nhật thông tin (lần đầu)" },
     ]},
   ],
   admin: [
@@ -223,8 +254,8 @@ const SCREENS = {
 /* ========== GUEST (Khách - chưa đăng nhập) ========== */
 "guest/home": () => `
   <div class="breadcrumb">Trang chủ công khai</div>
-  <div class="page-title">Cổng thông tin Đề tài Nghiên cứu Khoa học <span class="btn-group"><button class="btn sm">Đăng ký</button><button class="btn sm primary">Đăng nhập</button></span></div>
-  <div class="page-sub">Tra cứu các đề tài NCKH đã được công bố. Đăng nhập để đăng ký đề tài hoặc theo dõi tiến độ.</div>
+  <div class="page-title">Cổng thông tin Đề tài Nghiên cứu Khoa học <button class="btn sm primary">Đăng nhập (Email / Google)</button></div>
+  <div class="page-sub">Tra cứu các đề tài NCKH đã được công bố. Đăng nhập để theo dõi tiến độ hoặc đăng ký đề tài.</div>
 
   <div class="card">
     <div class="card-title">🔍 Tra cứu đề tài</div>
@@ -269,39 +300,81 @@ const SCREENS = {
 
   <div class="card">
     <div class="card-title">Bạn muốn đăng ký đề tài NCKH?</div>
-    <p class="text-muted mb-8">Đăng ký tài khoản miễn phí để theo dõi đề tài, đăng ký nghiên cứu mới, tải biểu mẫu...</p>
-    <div class="btn-group">
-      <button class="btn">Đăng ký tài khoản Người dùng</button>
-      <button class="btn primary">Đăng ký tài khoản Tác giả NCKH</button>
-    </div>
+    <p class="text-muted mb-8">Đăng nhập bằng <b>email</b> (OTP) hoặc <b>Google</b> để vào hệ thống. Nếu là lần đầu, bạn sẽ được chuyển đến màn cập nhật thông tin và có tùy chọn <b>đăng ký làm Tác giả NCKH</b>.</p>
+    <button class="btn primary">Đăng nhập »</button>
   </div>
 `,
 
 "guest/login": () => `
-  <div class="breadcrumb">Tài khoản / Đăng nhập</div>
+  <div class="breadcrumb">Đăng nhập</div>
   <div class="page-title">Đăng nhập hệ thống</div>
-  <div class="page-sub">F1.1.2 / F1.2.2 · Đăng nhập bằng email + mật khẩu</div>
+  <div class="page-sub">Đơn giản hóa: chỉ cần email (không cần mật khẩu) hoặc tài khoản Google · Bỏ qua flow đăng ký riêng</div>
 
-  <div style="max-width: 480px; margin: 0 auto;">
-    <div class="card">
-      <div class="card-title">🔐 Đăng nhập</div>
-      <div class="field"><label>Email <span class="req">*</span></label><input class="input" type="email" placeholder="example@bv.vn" /></div>
-      <div class="field"><label>Mật khẩu <span class="req">*</span></label><input class="input" type="password" placeholder="••••••••" /></div>
-      <div class="row mb-8" style="justify-content: space-between;">
-        <label class="small"><input type="checkbox"> Ghi nhớ đăng nhập</label>
-        <a class="small" href="#">Quên mật khẩu?</a>
-      </div>
-      <button class="btn primary" style="width: 100%;">Đăng nhập »</button>
-      <hr class="divider">
-      <div class="text-center text-muted small">Chưa có tài khoản?</div>
-      <div class="btn-group mt-8" style="justify-content: center;">
-        <button class="btn sm">+ Đăng ký Người dùng</button>
-        <button class="btn sm">+ Đăng ký Tác giả NCKH</button>
+  <div style="max-width: 520px; margin: 0 auto;">
+
+    <!-- Stepper -->
+    <div class="card" style="background: #f9fafb;">
+      <div class="row" style="justify-content: space-between; align-items: center; gap: 0;">
+        <div style="flex:1; text-align:center; border-right: 1px dashed #d1d5db; padding: 4px;"><b>① Chọn cách đăng nhập</b></div>
+        <div style="flex:1; text-align:center; border-right: 1px dashed #d1d5db; padding: 4px;"><b>② Xác thực OTP / Google</b></div>
+        <div style="flex:1; text-align:center; padding: 4px;"><b>③ Vào hệ thống</b></div>
       </div>
     </div>
 
+    <!-- Step 1: Choose method -->
     <div class="card">
-      <div class="card-title">Bảng demo nhanh (chỉ prototype)</div>
+      <div class="card-title">🔐 Bước 1: Chọn phương thức đăng nhập</div>
+
+      <!-- Option A: Email -->
+      <div class="card" style="background: #fafafa;">
+        <div class="card-title" style="padding-bottom: 4px;">📧 Đăng nhập bằng Email</div>
+        <div class="field"><label>Nhập địa chỉ email của bạn</label><input class="input" type="email" placeholder="example@bv.vn" /></div>
+        <button class="btn primary" style="width: 100%;">Gửi mã OTP / link đăng nhập »</button>
+        <div class="small text-muted mt-8">Hệ thống sẽ gửi <b>mã OTP 6 số</b> + <b>đường link kích hoạt</b> đến email của bạn. Bạn có thể chọn nhập OTP hoặc click link để đăng nhập.</div>
+      </div>
+
+      <div class="text-center text-muted small mt-12 mb-8">— HOẶC —</div>
+
+      <!-- Option B: Google -->
+      <div class="card" style="background: #fafafa;">
+        <div class="card-title" style="padding-bottom: 4px;">🔵 Đăng nhập bằng tài khoản Google</div>
+        <button class="btn" style="width: 100%; border: 1px solid #4285F4; color: #4285F4; font-weight: 600; padding: 10px;">
+          🇬 Tiếp tục với Google
+        </button>
+        <div class="small text-muted mt-8">Hệ thống sẽ chuyển sang trang đăng nhập Google (OAuth 2.0).</div>
+      </div>
+    </div>
+
+    <!-- Step 2: OTP Verification (only for Email path) -->
+    <div class="card">
+      <div class="card-title">📨 Bước 2 (Email): Xác thực OTP</div>
+      <p class="text-muted mb-8">Mã OTP đã được gửi đến <b>example@bv.vn</b>. Vui lòng nhập mã hoặc click link trong email.</p>
+      <div class="field"><label>Nhập mã OTP 6 số</label>
+        <input class="input" style="font-size: 18px; letter-spacing: 8px; text-align: center;" placeholder="••••••" maxlength="6" />
+      </div>
+      <div class="row" style="justify-content: space-between; align-items: center;">
+        <span class="small text-muted">Mã có hiệu lực trong 10 phút</span>
+        <button class="btn sm">Gửi lại mã</button>
+      </div>
+      <button class="btn primary mt-12" style="width: 100%;">Xác nhận & đăng nhập »</button>
+      <hr class="divider">
+      <div class="small text-muted text-center">Hoặc bạn đã click vào link kích hoạt trong email → tự động chuyển vào hệ thống</div>
+    </div>
+
+    <!-- Step 3: Routing logic -->
+    <div class="card">
+      <div class="card-title">🚦 Bước 3: Xác định luồng tiếp theo</div>
+      <table class="wf">
+        <thead><tr><th>Trường hợp</th><th>Điều hướng</th></tr></thead>
+        <tbody>
+          <tr><td>✅ Email <b>đã có</b> trong danh sách User</td><td>→ Vào thẳng <b>Trang chủ (Home)</b></td></tr>
+          <tr><td>🆕 Email <b>chưa có</b> trong danh sách User (lần đầu)</td><td>→ Chuyển sang màn <b>"Cập nhật thông tin lần đầu"</b><br><span class="small text-muted">(Sau đó tùy chọn đăng ký làm Tác giả NCKH)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="background: #f9fafb;">
+      <div class="card-title">Email demo nhanh (chỉ prototype)</div>
       <table class="wf">
         <thead><tr><th>Role</th><th>Email demo</th></tr></thead>
         <tbody>
@@ -309,125 +382,135 @@ const SCREENS = {
           <tr><td>Người dùng</td><td>lmu@bv.vn</td></tr>
           <tr><td>Tác giả</td><td>nva@bv.vn</td></tr>
           <tr><td>Hội đồng</td><td>phd@bv.vn</td></tr>
+          <tr><td>Email mới (chưa có)</td><td>newuser@bv.vn → màn "Cập nhật thông tin"</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 `,
 
-"guest/register-user": () => `
-  <div class="breadcrumb">Tài khoản / Đăng ký Người dùng</div>
-  <div class="page-title">Đăng ký tài khoản Người dùng</div>
-  <div class="page-sub">F1.2.1 - F1.2.4 · Đăng ký + xác thực email</div>
-
-  <div style="max-width: 720px; margin: 0 auto;">
-    <div class="card">
-      <div class="card-title">📋 Bước 1: Thông tin cơ bản</div>
-      <div class="grid-2">
-        <div class="field"><label>Họ tên <span class="req">*</span></label><input class="input" placeholder="Nguyễn Văn A" /></div>
-        <div class="field"><label>Email <span class="req">*</span></label><input class="input" type="email" placeholder="example@bv.vn" /><div class="small text-muted">Email sẽ được dùng để đăng nhập + nhận thông báo</div></div>
-        <div class="field"><label>Số điện thoại <span class="req">*</span></label><input class="input" placeholder="0912 345 678" /></div>
-        <div class="field"><label>Đơn vị công tác <span class="req">*</span></label><select class="select"><option>-- Chọn --</option><option>Khoa Nội</option><option>Khoa Ngoại</option><option>Khoa Dược</option><option>Phòng KHTH</option></select></div>
-        <div class="field"><label>Chức vụ</label><input class="input" placeholder="VD: BS điều trị, ĐD..." /></div>
-        <div class="field"><label>Mã NV (nếu có)</label><input class="input" /></div>
-      </div>
-      <div class="grid-2">
-        <div class="field"><label>Mật khẩu <span class="req">*</span></label><input class="input" type="password" /><div class="small text-muted">Tối thiểu 8 ký tự, có chữ + số + ký tự đặc biệt</div></div>
-        <div class="field"><label>Nhập lại mật khẩu <span class="req">*</span></label><input class="input" type="password" /></div>
-      </div>
-      <div class="field"><label><input type="checkbox"> Tôi đã đọc và đồng ý <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a></label></div>
-      <button class="btn primary" style="width: 100%;">Tiếp tục - Gửi mã xác thực qua email »</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📧 Bước 2: Xác thực email (F1.2.4)</div>
-      <p class="text-muted mb-8">Hệ thống đã gửi mã OTP 6 số đến email của bạn. Vui lòng nhập mã bên dưới:</p>
-      <div class="row" style="align-items: center;">
-        <input class="input" style="font-size: 18px; letter-spacing: 8px; text-align: center; max-width: 220px;" placeholder="••••••" maxlength="6" />
-        <button class="btn">Gửi lại mã</button>
-      </div>
-      <div class="small text-muted mt-8">Mã có hiệu lực trong 10 phút</div>
-      <button class="btn primary mt-12">Xác nhận & hoàn tất đăng ký</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">✅ Bước 3: Hoàn tất</div>
-      <p class="text-muted">Sau khi đăng ký thành công, bạn sẽ nhận được thông báo (F1.2.3) và được tự động chuyển đến trang chủ. Bạn có thể tra cứu đề tài, tải biểu mẫu, và yêu cầu nâng cấp lên Tác giả khi cần đăng ký đề tài NCKH.</p>
-    </div>
-  </div>
-`,
-
-"guest/register-author": () => `
-  <div class="breadcrumb">Tài khoản / Đăng ký Tác giả</div>
-  <div class="page-title">Đăng ký tài khoản Tác giả NCKH</div>
-  <div class="page-sub">F1.1.1 - F1.1.6 · Đăng ký trực tiếp với tư cách tác giả (yêu cầu duyệt)</div>
+"guest/setup-profile": () => `
+  <div class="breadcrumb">Đăng nhập / Cập nhật thông tin lần đầu</div>
+  <div class="page-title">Cập nhật thông tin tài khoản</div>
+  <div class="page-sub">Tự động hiển thị khi email lần đầu đăng nhập (chưa có trong danh sách User) · Sau đó tùy chọn nâng cấp Tác giả NCKH</div>
 
   <div style="max-width: 760px; margin: 0 auto;">
-    <div class="card">
-      <div class="card-title">📋 Thông tin cơ bản</div>
-      <div class="grid-2">
-        <div class="field"><label>Họ tên <span class="req">*</span></label><input class="input" /></div>
-        <div class="field"><label>Email <span class="req">*</span></label><input class="input" type="email" placeholder="example@bv.vn" /></div>
-        <div class="field"><label>Số điện thoại <span class="req">*</span></label><input class="input" /></div>
-        <div class="field"><label>Đơn vị công tác <span class="req">*</span></label><select class="select"><option>-- Chọn --</option></select></div>
-        <div class="field"><label>Mật khẩu <span class="req">*</span></label><input class="input" type="password" /></div>
-        <div class="field"><label>Nhập lại mật khẩu <span class="req">*</span></label><input class="input" type="password" /></div>
+
+    <!-- Stepper -->
+    <div class="card" style="background: #f9fafb;">
+      <div class="row" style="justify-content: space-between; align-items: center; gap: 0;">
+        <div style="flex:1; text-align:center; border-right: 1px dashed #d1d5db; padding: 4px;"><b>① Cập nhật thông tin User</b><div class="small text-muted">Bắt buộc</div></div>
+        <div style="flex:1; text-align:center; border-right: 1px dashed #d1d5db; padding: 4px;"><b>② Đăng ký Tác giả NCKH?</b><div class="small text-muted">Tùy chọn</div></div>
+        <div style="flex:1; text-align:center; padding: 4px;"><b>③ Vào hệ thống</b></div>
       </div>
     </div>
 
+    <!-- Step 1: User profile -->
     <div class="card">
-      <div class="card-title">🎓 Thông tin học thuật (bổ sung so với TK người dùng)</div>
+      <div class="card-title">📋 Bước 1: Thông tin tài khoản Người dùng <span class="badge sent">Bắt buộc</span></div>
+      <p class="text-muted mb-8">Email của bạn (<b>newuser@bv.vn</b>) chưa có trong hệ thống. Vui lòng cung cấp thông tin sau để hoàn tất tạo tài khoản:</p>
+
+      <div class="field"><label>Email <span class="badge done">Đã xác thực</span></label><input class="input" value="newuser@bv.vn" disabled /></div>
+
       <div class="grid-2">
-        <div class="field"><label>Học hàm/học vị <span class="req">*</span></label><select class="select"><option>BS</option><option>ThS</option><option>TS</option><option>PGS</option><option>GS</option></select></div>
-        <div class="field"><label>Chuyên ngành chính <span class="req">*</span></label><select class="select"><option>Nội khoa</option><option>Ngoại khoa</option><option>Dược</option><option>Nhi</option></select></div>
-        <div class="field"><label>Số CCHN</label><input class="input" placeholder="VD: 0123456789" /></div>
+        <div class="field"><label>Họ và tên <span class="req">*</span></label><input class="input" placeholder="Nguyễn Văn A" /></div>
+        <div class="field"><label>Số điện thoại <span class="req">*</span></label><input class="input" placeholder="0912 345 678" /></div>
+        <div class="field"><label>Đơn vị công tác <span class="req">*</span></label>
+          <select class="select">
+            <option>-- Chọn đơn vị --</option>
+            <option>Bệnh viện X</option>
+            <option>Bệnh viện Y</option>
+            <option>Đại học Y Hà Nội</option>
+          </select>
+        </div>
+        <div class="field"><label>Phòng ban <span class="req">*</span></label>
+          <select class="select">
+            <option>-- Chọn phòng ban --</option>
+            <option>Khoa Nội</option>
+            <option>Khoa Ngoại</option>
+            <option>Khoa Nhi</option>
+            <option>Khoa Dược</option>
+            <option>Phòng KHTH</option>
+            <option>Phòng CNTT</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column: span 2;"><label>Chức vụ <span class="req">*</span></label>
+          <select class="select">
+            <option>-- Chọn chức vụ --</option>
+            <option>Bác sĩ điều trị</option>
+            <option>Trưởng khoa</option>
+            <option>Phó khoa</option>
+            <option>Điều dưỡng</option>
+            <option>Dược sĩ</option>
+            <option>Cán bộ nghiên cứu</option>
+            <option>Quản trị viên</option>
+          </select>
+        </div>
+      </div>
+      <div class="text-right">
+        <button class="btn primary">Lưu & tiếp tục »</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Become author -->
+    <div class="card">
+      <div class="card-title">🎓 Bước 2: Bạn có muốn đăng ký làm Tác giả NCKH không? <span class="badge draft">Tùy chọn</span></div>
+      <p class="text-muted mb-8">Nâng cấp lên <b>Tác giả NCKH</b> để được phép đăng ký đề tài. Yêu cầu sẽ được Admin duyệt trong 1-3 ngày làm việc.</p>
+
+      <div class="row mb-8">
+        <label style="flex:1;"><input type="radio" name="upgrade" /> <b>Không, chỉ dùng tài khoản Người dùng</b><br><span class="small text-muted">→ Vào thẳng trang chủ. Có thể nâng cấp sau ở mục "Yêu cầu nâng cấp".</span></label>
+        <label style="flex:1;"><input type="radio" name="upgrade" checked /> <b>Có, đăng ký làm Tác giả NCKH</b><br><span class="small text-muted">→ Điền tiếp thông tin học thuật bên dưới.</span></label>
+      </div>
+
+      <hr class="divider">
+      <div class="card-title" style="margin-bottom: 8px;">Thông tin bổ sung cho Tác giả</div>
+      <div class="grid-2">
+        <div class="field"><label>Học hàm / học vị <span class="req">*</span></label>
+          <select class="select"><option>BS</option><option>ThS</option><option>TS</option><option>PGS</option><option>GS</option></select>
+        </div>
+        <div class="field"><label>Chuyên ngành chính <span class="req">*</span></label>
+          <select class="select"><option>Nội khoa</option><option>Ngoại khoa</option><option>Dược</option><option>Nhi</option><option>CĐHA</option></select>
+        </div>
+        <div class="field"><label>Số Chứng chỉ hành nghề</label><input class="input" placeholder="VD: 0123456789" /></div>
         <div class="field"><label>Năm tốt nghiệp</label><input class="input" type="number" /></div>
       </div>
-      <div class="field"><label>File minh chứng (CCHN, bằng cấp...) <span class="req">*</span></label><input class="input" type="file" multiple /></div>
-      <div class="field"><label>Định hướng nghiên cứu</label><textarea class="textarea" placeholder="Mô tả ngắn lĩnh vực nghiên cứu mà bạn quan tâm..."></textarea></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📧 Xác thực email (F1.1.4)</div>
-      <p class="text-muted mb-8">Sau khi điền form, hệ thống sẽ gửi mã OTP đến email để xác thực. Sau khi xác thực email, hồ sơ sẽ được gửi đến Admin để duyệt (1-3 ngày làm việc).</p>
-      <div class="row" style="align-items: center;">
-        <input class="input" style="max-width: 200px;" placeholder="Nhập mã OTP" />
-        <button class="btn">Gửi mã xác thực</button>
+      <div class="field">
+        <label>File minh chứng (Chứng chỉ hành nghề, bằng cấp, quyết định bổ nhiệm...) <span class="req">*</span></label>
+        <input class="input" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+        <div class="small text-muted mt-8">Hỗ trợ nhiều file · Định dạng: PDF, JPG, PNG, DOC/DOCX · Tối đa 10 MB/file</div>
+        <table class="wf mt-8">
+          <thead><tr><th>STT</th><th>Tên file</th><th>Loại</th><th>Dung lượng</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>📎 ChungChiHanhNghe.pdf</td><td>PDF</td><td>1.2 MB</td><td><button class="btn sm danger">Xóa</button></td></tr>
+            <tr><td>2</td><td>📎 BangTotNghiep.pdf</td><td>PDF</td><td>0.8 MB</td><td><button class="btn sm danger">Xóa</button></td></tr>
+            <tr><td>3</td><td>📎 QuyetDinhBoNhiem.jpg</td><td>JPG</td><td>0.5 MB</td><td><button class="btn sm danger">Xóa</button></td></tr>
+          </tbody>
+        </table>
+        <button class="btn sm mt-8">+ Thêm file</button>
+      </div>
+      <div class="field"><label>Định hướng nghiên cứu</label><textarea class="textarea" placeholder="Mô tả ngắn lĩnh vực nghiên cứu..."></textarea></div>
+      <div class="field"><label><input type="checkbox"> Tôi cam kết thông tin chính xác và đồng ý <a href="#">Quy định đăng ký đề tài NCKH</a></label></div>
+      <div class="text-right">
+        <button class="btn">Bỏ qua, vào trang chủ</button>
+        <button class="btn primary">Gửi yêu cầu nâng cấp Tác giả »</button>
       </div>
     </div>
 
-    <div class="field"><label><input type="checkbox"> Tôi cam kết các thông tin cung cấp là chính xác và đồng ý với <a href="#">Quy định đăng ký đề tài NCKH</a></label></div>
-    <div class="text-right">
-      <button class="btn">Hủy</button>
-      <button class="btn primary">Gửi đăng ký »</button>
-    </div>
-  </div>
-`,
-
-"guest/forgot": () => `
-  <div class="breadcrumb">Tài khoản / Quên mật khẩu</div>
-  <div class="page-title">Quên mật khẩu</div>
-  <div class="page-sub">F1.1.5 / F1.2.5 · Khôi phục mật khẩu qua email</div>
-
-  <div style="max-width: 480px; margin: 0 auto;">
+    <!-- Step 3: Done -->
     <div class="card">
-      <div class="card-title">🔑 Bước 1: Nhập email</div>
-      <div class="field"><label>Email đã đăng ký</label><input class="input" type="email" placeholder="example@bv.vn" /></div>
-      <button class="btn primary" style="width: 100%;">Gửi link đặt lại mật khẩu</button>
+      <div class="card-title">✅ Bước 3: Hoàn tất</div>
+      <div class="row">
+        <div class="col">
+          <p class="text-muted"><b>Nếu chỉ tạo TK Người dùng:</b></p>
+          <p class="small">Tài khoản kích hoạt ngay → tự động vào trang chủ.</p>
+        </div>
+        <div class="col">
+          <p class="text-muted"><b>Nếu có yêu cầu nâng cấp Tác giả:</b></p>
+          <p class="small">TK Người dùng kích hoạt ngay; yêu cầu Tác giả gửi đến Admin. Khi Admin duyệt, role tự động chuyển thành "Tác giả" — bạn nhận thông báo qua email + in-app.</p>
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">📧 Bước 2: Kiểm tra email</div>
-      <p class="text-muted">Hệ thống đã gửi link đặt lại mật khẩu vào email của bạn. Click vào link trong email để tiếp tục.</p>
-      <div class="small text-muted">Link có hiệu lực trong 30 phút.</div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🔒 Bước 3: Đặt mật khẩu mới</div>
-      <div class="field"><label>Mật khẩu mới</label><input class="input" type="password" /></div>
-      <div class="field"><label>Nhập lại mật khẩu mới</label><input class="input" type="password" /></div>
-      <button class="btn primary" style="width: 100%;">Cập nhật mật khẩu</button>
-    </div>
   </div>
 `,
 
@@ -935,10 +1018,21 @@ const SCREENS = {
     <div class="grid-2">
       <div class="field"><label>Học hàm/học vị <span class="req">*</span></label><select class="select"><option>BS</option><option>ThS</option><option>TS</option><option>PGS</option><option>GS</option></select></div>
       <div class="field"><label>Chuyên ngành chính <span class="req">*</span></label><select class="select"><option>Nội khoa</option><option>Ngoại khoa</option><option>Dược</option></select></div>
-      <div class="field"><label>Số CCHN (nếu có)</label><input class="input" /></div>
+      <div class="field"><label>Số Chứng chỉ hành nghề (nếu có)</label><input class="input" /></div>
       <div class="field"><label>Năm tốt nghiệp</label><input class="input" /></div>
     </div>
-    <div class="field"><label>File minh chứng (CCHN, bằng cấp...)</label><input class="input" type="file" multiple /></div>
+    <div class="field">
+      <label>File minh chứng (Chứng chỉ hành nghề, bằng cấp, quyết định bổ nhiệm...)</label>
+      <input class="input" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+      <div class="small text-muted mt-8">Hỗ trợ tải lên nhiều file · PDF, JPG, PNG, DOC/DOCX · Tối đa 10 MB/file</div>
+      <table class="wf mt-8">
+        <thead><tr><th>STT</th><th>Tên file</th><th>Loại</th><th>Dung lượng</th><th></th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" class="text-muted text-center">Chưa có file nào — bấm "Choose Files" ở trên để chọn</td></tr>
+        </tbody>
+      </table>
+      <button class="btn sm mt-8">+ Thêm file</button>
+    </div>
     <div class="field"><label>Lý do đăng ký</label><textarea class="textarea" placeholder="Mô tả ngắn lý do và định hướng nghiên cứu..."></textarea></div>
     <button class="btn primary">Gửi yêu cầu nâng cấp</button>
   </div>
@@ -1002,7 +1096,7 @@ const SCREENS = {
       <div class="field"><label>Học hàm/vị</label><select class="select"><option>BS</option><option selected>ThS</option><option>TS</option></select></div>
       <div class="field"><label>Chuyên ngành</label><input class="input" value="Nội khoa" /></div>
       <div class="field"><label>Đơn vị</label><input class="input" value="Khoa Nội - BV X" /></div>
-      <div class="field"><label>CCHN</label><input class="input" value="0123456789" /></div>
+      <div class="field"><label>Chứng chỉ hành nghề</label><input class="input" value="0123456789" /></div>
       <button class="btn primary">Lưu</button>
     </div>
     <div class="card">
@@ -1040,9 +1134,36 @@ const SCREENS = {
   <div class="breadcrumb">Đề tài của tôi / Đăng ký mới</div>
   <div class="page-title">+ Đăng ký đề tài NCKH mới</div>
   <div class="page-sub">F2.1.2 - F2.1.5</div>
+
   <div class="card">
     <div class="card-title">1. Thông tin chung</div>
-    <div class="field"><label>Tên đề tài <span class="req">*</span></label><input class="input" placeholder="Nhập tên đề tài..." /></div>
+
+    <div class="field">
+      <label>
+        Tên đề tài <span class="req">*</span>
+        <button class="btn sm" style="float:right; padding:2px 8px; font-size:11px;" onclick="document.getElementById('hintTitle').style.display = (document.getElementById('hintTitle').style.display==='block'?'none':'block')">💡 Gợi ý cách đặt tên</button>
+      </label>
+      <input class="input" placeholder="VD: Đánh giá kết quả điều trị phẫu thuật nội soi sỏi túi mật tại Bệnh viện X từ tháng 1/2023 đến tháng 12/2023" />
+
+      <div id="hintTitle" style="display:block; background:#fffbeb; border:1px dashed #d97706; padding:14px; margin-top:8px; border-radius:2px;">
+        <div style="font-weight:600; margin-bottom:8px;">📝 Công thức đặt tên đề tài chuẩn</div>
+        <div style="font-family: monospace; background:#fff; padding:8px; border:1px dashed #d1d5db; margin-bottom:10px;">
+          <span style="background:#dbeafe; padding:2px 6px;">[Tên phương pháp / nội dung]</span>
+          + <span style="background:#dcfce7; padding:2px 6px;">[Đối tượng / Bệnh lý]</span>
+          + <span style="background:#fef3c7; padding:2px 6px;">[Địa điểm nghiên cứu]</span>
+          + <span style="background:#fee2e2; padding:2px 6px;">[Thời gian]</span>
+        </div>
+        <div class="small" style="margin-bottom:6px;"><b>Ví dụ:</b></div>
+        <div class="small" style="padding-left:14px;">
+          <span style="background:#dbeafe;">Đánh giá kết quả điều trị phẫu thuật nội soi</span>
+          <span style="background:#dcfce7;">sỏi túi mật</span>
+          <span style="background:#fef3c7;">tại Bệnh viện X</span>
+          <span style="background:#fee2e2;">từ tháng 1/2023 đến tháng 12/2023</span>
+        </div>
+        <div class="small text-muted mt-8">→ Tên đề tài cần rõ ràng, đầy đủ 4 thành tố để Hội đồng dễ đánh giá phạm vi nghiên cứu.</div>
+      </div>
+    </div>
+
     <div class="grid-2">
       <div class="field"><label>Chuyên ngành <span class="req">*</span></label><select class="select"><option>-- Chọn --</option><option>Nội khoa</option><option>Ngoại khoa</option><option>Dược</option></select></div>
       <div class="field"><label>Phân loại đề tài <span class="req">*</span></label><select class="select"><option>Cấp cơ sở</option><option>Cấp Bộ</option><option>Cấp Nhà nước</option></select></div>
@@ -1050,17 +1171,179 @@ const SCREENS = {
       <div class="field"><label>Thời gian dự kiến</label><input class="input" placeholder="VD: 12 tháng" /></div>
     </div>
   </div>
+
   <div class="card">
-    <div class="card-title">2. Tác giả & nhóm nghiên cứu</div>
-    <div class="field"><label>Tác giả chính</label><input class="input" value="Nguyễn Văn Tác Giả" disabled /></div>
-    <div class="field"><label>Đồng tác giả</label><div class="placeholder" style="min-height:60px;">[ Multi-select / Add người ]</div></div>
+    <div class="card-title">2. Nhóm tác giả & nghiên cứu viên <button class="btn sm primary">+ Thêm thành viên</button></div>
+    <p class="small text-muted mb-8">Người đăng ký đề tài <b>có thể không phải</b> là tác giả chính. Hãy chọn đúng <b>Tác giả chính</b> qua cột radio bên trái. Mỗi thành viên cần có học hàm/học vị tương ứng. Bạn có thể chọn từ danh sách user hệ thống <b>hoặc nhập tay</b> tên người ngoài.</p>
+
+    <table class="wf">
+      <thead>
+        <tr>
+          <th style="width:60px; text-align:center;">Chính</th>
+          <th style="width:90px;">Học hàm/vị</th>
+          <th>Họ và tên</th>
+          <th>Đơn vị / Khoa</th>
+          <th style="width:140px;">Vai trò</th>
+          <th style="width:80px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:#f0fdf4;">
+          <td style="text-align:center;"><input type="radio" name="lead-author" /></td>
+          <td>
+            <select class="select"><option>BS</option><option>ThS</option><option selected>TS</option><option>PGS</option><option>GS</option></select>
+          </td>
+          <td>
+            <div class="row" style="gap:4px;">
+              <input class="input" value="Nguyễn Văn Tác Giả (tôi)" />
+            </div>
+            <div class="small text-muted mt-8">📌 Đây là người đang đăng ký - chưa chắc là tác giả chính</div>
+          </td>
+          <td><input class="input" value="Khoa Nội - BV X" /></td>
+          <td><select class="select"><option>Đồng tác giả</option><option>Tác giả chính</option><option>Hướng dẫn</option><option>Cộng sự</option></select></td>
+          <td><button class="btn sm" disabled>—</button></td>
+        </tr>
+        <tr>
+          <td style="text-align:center;"><input type="radio" name="lead-author" checked /></td>
+          <td>
+            <select class="select"><option>BS</option><option>ThS</option><option>TS</option><option selected>PGS</option><option>GS</option></select>
+          </td>
+          <td>
+            <div class="row" style="gap:4px;">
+              <input class="input" value="Lê Văn X" placeholder="Gõ tên hoặc chọn từ DS user..." />
+              <button class="btn sm">🔍</button>
+            </div>
+            <div class="small text-muted mt-8">Đã chọn từ DS user hệ thống</div>
+          </td>
+          <td><input class="input" value="ĐH Y Hà Nội" /></td>
+          <td><select class="select"><option selected>Tác giả chính</option><option>Đồng tác giả</option></select></td>
+          <td><button class="btn sm danger">Xóa</button></td>
+        </tr>
+        <tr>
+          <td style="text-align:center;"><input type="radio" name="lead-author" /></td>
+          <td>
+            <select class="select"><option>BS</option><option selected>ThS</option><option>TS</option></select>
+          </td>
+          <td>
+            <div class="row" style="gap:4px;">
+              <input class="input" value="Phạm Thị Y" placeholder="Gõ tên hoặc chọn từ DS user..." />
+              <button class="btn sm">🔍</button>
+            </div>
+            <div class="small text-muted mt-8">Nhập tay (người ngoài hệ thống)</div>
+          </td>
+          <td><input class="input" value="BV Việt Đức" /></td>
+          <td><select class="select"><option selected>Đồng tác giả</option></select></td>
+          <td><button class="btn sm danger">Xóa</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="row mt-12" style="background:#fafafa; border:1px dashed #d1d5db; padding:10px; align-items:center;">
+      <span style="margin-right:8px;">➕ Thêm nhanh:</span>
+      <select class="select" style="max-width:90px;"><option>BS</option><option>ThS</option><option>TS</option><option>PGS</option><option>GS</option></select>
+      <input class="input" placeholder="Gõ tên (autocomplete từ DS user) hoặc điền tay tên người ngoài..." style="flex:1;" />
+      <input class="input" placeholder="Đơn vị / Khoa" style="max-width:200px;" />
+      <button class="btn primary">+ Thêm</button>
+    </div>
+
+    <div class="small text-muted mt-12">
+      <b>Lưu ý:</b> ⓘ
+      • Phải có đúng <b>1 Tác giả chính</b> (chọn qua radio)
+      • Tên kèm học hàm/vị sẽ được hiển thị trên báo cáo, chứng nhận theo định dạng: <code>PGS.TS Lê Văn X</code>
+      • Người ngoài DS user sẽ chỉ xuất hiện trên đề tài, không tạo tài khoản đăng nhập
+    </div>
   </div>
   <div class="card">
-    <div class="card-title">3. Nội dung & ý tưởng (F2.1.3)</div>
-    <div class="field"><label>Mục tiêu nghiên cứu</label><textarea class="textarea"></textarea></div>
-    <div class="field"><label>Tổng quan tài liệu</label><textarea class="textarea"></textarea></div>
-    <div class="field"><label>Phương pháp nghiên cứu</label><textarea class="textarea"></textarea></div>
-    <div class="field"><label>Kết quả dự kiến</label><textarea class="textarea"></textarea></div>
+    <div class="card-title">3. Nội dung & ý tưởng nghiên cứu (F2.1.3)</div>
+    <p class="small text-muted mb-8">Đề tài cần điền đủ 7 phần dưới đây theo cấu trúc chuẩn nghiên cứu khoa học. Mỗi phần có gợi ý nội dung trong placeholder.</p>
+
+    <div class="field">
+      <label>3.1. Đặt vấn đề <span class="req">*</span> <span class="text-muted small">— Tại sao cần làm?</span></label>
+      <textarea class="textarea" placeholder="Nêu bối cảnh, tính cấp thiết, lý do thực hiện đề tài. Vấn đề/khoảng trống nào đang tồn tại trong thực tiễn lâm sàng/nghiên cứu mà đề tài này hướng đến giải quyết?"></textarea>
+    </div>
+
+    <div class="field">
+      <label>3.2. Mục tiêu nghiên cứu <span class="req">*</span> <span class="text-muted small">— Làm gì?</span></label>
+      <textarea class="textarea" placeholder="Mục tiêu tổng quát + các mục tiêu cụ thể (1, 2, 3...). Mục tiêu cần đo lường được, gắn với phương pháp."></textarea>
+    </div>
+
+    <div class="field">
+      <label>3.3. Tổng quan tài liệu <span class="req">*</span> <span class="text-muted small">— Người khác đã làm gì?</span></label>
+      <textarea class="textarea" placeholder="Tóm tắt các nghiên cứu trong & ngoài nước có liên quan, kết quả của họ, hạn chế còn tồn tại. Dẫn nguồn rõ ràng."></textarea>
+    </div>
+
+    <div class="field">
+      <label>3.4. Đối tượng và Phương pháp nghiên cứu <span class="req">*</span> <span class="text-muted small">— Làm như thế nào?</span></label>
+      <textarea class="textarea" placeholder="• Đối tượng: tiêu chuẩn lựa chọn / loại trừ, cỡ mẫu, cách chọn mẫu&#10;• Thiết kế nghiên cứu: mô tả cắt ngang / theo dõi / can thiệp / RCT...&#10;• Biến số nghiên cứu, cách đo lường&#10;• Phương pháp xử lý số liệu, phần mềm thống kê" style="min-height: 110px;"></textarea>
+    </div>
+
+    <div class="field">
+      <label>3.5. Đạo đức trong nghiên cứu <span class="req">*</span> <span class="text-muted small">— Có hại cho bệnh nhân không?</span></label>
+      <textarea class="textarea" placeholder="• Nguy cơ với người tham gia nghiên cứu (nếu có) và biện pháp giảm thiểu&#10;• Quy trình lấy đồng thuận tham gia (Informed Consent)&#10;• Bảo mật thông tin người bệnh&#10;• Cam kết tuân thủ Hội đồng Đạo đức"></textarea>
+    </div>
+
+    <div class="field">
+      <label>3.6. Dự kiến kết quả</label>
+      <textarea class="textarea" placeholder="Kết quả dự kiến đạt được tương ứng với từng mục tiêu. Ý nghĩa khoa học & thực tiễn."></textarea>
+    </div>
+
+    <div class="field">
+      <label>3.7. Dự kiến kinh phí <span class="text-muted small">— Tổng + chi tiết</span></label>
+      <table class="wf">
+        <thead>
+          <tr>
+            <th style="width:40px;">STT</th>
+            <th>Nội dung chi</th>
+            <th style="width:130px;">Đơn vị tính</th>
+            <th style="width:90px;">Số lượng</th>
+            <th style="width:130px;">Đơn giá (VND)</th>
+            <th style="width:140px;">Thành tiền (VND)</th>
+            <th style="width:60px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><input class="input" placeholder="VD: Vật tư hóa chất xét nghiệm" /></td>
+            <td><input class="input" placeholder="Bộ" /></td>
+            <td><input class="input" type="number" placeholder="100" /></td>
+            <td><input class="input" type="number" placeholder="150000" /></td>
+            <td><input class="input" placeholder="15.000.000" /></td>
+            <td><button class="btn sm danger">Xóa</button></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><input class="input" placeholder="VD: Công thu thập số liệu" /></td>
+            <td><input class="input" placeholder="Người/tháng" /></td>
+            <td><input class="input" type="number" placeholder="2" /></td>
+            <td><input class="input" type="number" placeholder="5000000" /></td>
+            <td><input class="input" placeholder="10.000.000" /></td>
+            <td><button class="btn sm danger">Xóa</button></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><input class="input" placeholder="VD: Văn phòng phẩm, in ấn" /></td>
+            <td><input class="input" /></td>
+            <td><input class="input" type="number" /></td>
+            <td><input class="input" type="number" /></td>
+            <td><input class="input" /></td>
+            <td><button class="btn sm danger">Xóa</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr style="background:#f9fafb; font-weight:600;">
+            <td colspan="5" class="text-right">TỔNG KINH PHÍ ĐỀ NGHỊ:</td>
+            <td><input class="input" value="25.000.000" style="font-weight:700;" /></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+      <button class="btn sm mt-8">+ Thêm khoản chi</button>
+      <div class="grid-2 mt-12">
+        <div class="field"><label>Nguồn kinh phí dự kiến</label><select class="select"><option>Quỹ NCKH cơ sở (BV)</option><option>Quỹ NCKH cấp Bộ</option><option>NAFOSTED</option><option>Tài trợ doanh nghiệp</option><option>Tự túc</option><option>Khác</option></select></div>
+        <div class="field"><label>Ghi chú kinh phí</label><input class="input" placeholder="VD: Chia làm 2 đợt giải ngân..." /></div>
+      </div>
+    </div>
   </div>
   <div class="card">
     <div class="card-title">4. File đính kèm (F2.1.4)</div>
@@ -1075,37 +1358,413 @@ const SCREENS = {
 
 "author/topic-detail": () => `
   <div class="breadcrumb">Đề tài của tôi / Chi tiết</div>
-  <div class="page-title">ĐT-2026-018 - Khảo sát mức độ tuân thủ phác đồ <span class="badge approved">Đã duyệt</span></div>
-  <div class="page-sub">Theo dõi tiến độ end-to-end</div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Tiến độ đề tài</div>
-      <div class="timeline">
-        <div class="tl-item done"><div class="tl-title">Đăng ký đề tài</div><div class="tl-meta">10/03/2026</div></div>
-        <div class="tl-item done"><div class="tl-title">HĐ xét duyệt đề cương (HĐ-XD-03)</div><div class="tl-meta">15/04/2026 · KQ: Đạt</div></div>
-        <div class="tl-item done"><div class="tl-title">Cấp mã số ĐT-2026-018 + QĐ phê duyệt</div><div class="tl-meta">16/04/2026</div></div>
-        <div class="tl-item"><div class="tl-title">Đang triển khai NCKH</div><div class="tl-meta">Hạn nộp BC nghiệm thu: 30/10/2026</div></div>
-        <div class="tl-item"><div class="tl-title">Họp Hội đồng nghiệm thu</div><div class="tl-meta">Dự kiến T11/2026</div></div>
-        <div class="tl-item"><div class="tl-title">Cấp chứng nhận</div><div class="tl-meta">Sau nghiệm thu</div></div>
-      </div>
+  <div class="page-title">
+    ĐT-2026-018 · Khảo sát mức độ tuân thủ phác đồ kháng sinh tại Khoa Nội
+    <span class="badge approved">S10 · Đang thực hiện</span>
+  </div>
+  <div class="page-sub">F2.2.x · Theo dõi vòng đời end-to-end · 7 giai đoạn / 24 trạng thái</div>
+
+  <!-- Banner trạng thái hiện tại -->
+  <div class="state-banner">
+    <div>
+      <div class="banner-label">⏱ Trạng thái hiện tại</div>
+      <div class="banner-title">S10 · Đang thực hiện</div>
+      <div class="banner-meta">Giai đoạn ④ Triển khai · Bắt đầu 16/04/2026 · Hạn nộp BC nghiệm thu: <b>30/10/2026</b> (còn <b>174 ngày</b>) · BC tiến độ tiếp theo: 16/07/2026</div>
     </div>
-    <div class="card">
-      <div class="card-title">Thông tin đề tài</div>
-      <p><b>Mã:</b> ĐT-2026-018</p>
-      <p><b>Chuyên ngành:</b> Dược lâm sàng</p>
-      <p><b>Tác giả chính:</b> Nguyễn Văn Tác Giả</p>
-      <p><b>HĐ phụ trách:</b> HĐKH Khoa Dược</p>
-      <p><b>Kinh phí được cấp:</b> 50.000.000 VND (F2.8.4)</p>
-      <hr class="divider">
-      <p><b>File đính kèm:</b></p>
-      <p>📎 ThuyetMinh_DT018.pdf</p>
-      <p>📎 QD-PD-018.pdf</p>
-      <button class="btn primary mt-12">Nộp báo cáo nghiệm thu »</button>
+    <div class="banner-actions">
+      <button class="btn">📤 Nộp BC tiến độ</button>
+      <button class="btn">⏸ Xin gia hạn</button>
+      <button class="btn primary">✅ Nộp BC nghiệm thu »</button>
     </div>
   </div>
+
+  <!-- Phase strip: 7 giai đoạn -->
+  <div class="phase-strip">
+    <div class="phase-step done"><span class="step-num">①</span>Khởi tạo<br>S01-S03</div>
+    <div class="phase-step done"><span class="step-num">②</span>Thẩm định ĐC<br>S04-S07</div>
+    <div class="phase-step done"><span class="step-num">③</span>Phê duyệt TH<br>S08-S09</div>
+    <div class="phase-step current"><span class="step-num">④</span>Triển khai<br>S10-S13</div>
+    <div class="phase-step"><span class="step-num">⑤</span>NT cấp cơ sở<br>S14-S18</div>
+    <div class="phase-step"><span class="step-num">⑥</span>NT cấp trên<br>S19-S21</div>
+    <div class="phase-step"><span class="step-num">⑦</span>Cấp CN & lưu trữ<br>S22-S24</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📋 Thông tin đề tài</div>
+      <p><b>Mã:</b> ĐT-2026-018 (mã tạm: TMP-2026-031)</p>
+      <p><b>Cấp đề tài:</b> Cấp cơ sở (Bệnh viện)</p>
+      <p><b>Chuyên ngành:</b> Dược lâm sàng</p>
+      <p><b>Tác giả chính:</b> Nguyễn Văn Tác Giả</p>
+      <p><b>Đồng tác giả:</b> 3 người (xem nhóm NC)</p>
+      <p><b>HĐ phụ trách:</b> HĐKH Khoa Dược</p>
+      <p><b>Thời gian thực hiện:</b> 04/2026 → 10/2026 (6 tháng)</p>
+      <p><b>Kinh phí được cấp:</b> 50.000.000 VND</p>
+      <p><b>Đã giải ngân:</b> 20.000.000 VND (40%)</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Thống kê tiến trình</div>
+      <div class="grid-2">
+        <div class="stat"><div class="stat-num" style="color:#15803d;">9/24</div><div class="stat-lbl">Trạng thái đã qua</div></div>
+        <div class="stat"><div class="stat-num" style="color:#d97706;">1</div><div class="stat-lbl">Đang ở</div></div>
+        <div class="stat"><div class="stat-num" style="color:#6b7280;">14</div><div class="stat-lbl">Còn lại</div></div>
+        <div class="stat"><div class="stat-num" style="color:#2563eb;">37%</div><div class="stat-lbl">Hoàn thành</div></div>
+      </div>
+      <p class="small text-muted mt-12">⏱ Tổng thời gian từ S01 đến hiện tại: <b>65 ngày</b> · Trung bình ngành: 78 ngày</p>
+    </div>
+  </div>
+
+  <!-- TIMELINE chi tiết 24 trạng thái phân theo phase -->
   <div class="card">
-    <div class="card-title">Yêu cầu chỉnh sửa từ HĐ (nếu có)</div>
-    <p class="text-muted">Chưa có yêu cầu nào.</p>
+    <div class="card-title">
+      🔄 Vòng đời chi tiết · 24 trạng thái
+      <div class="btn-group">
+        <button class="btn sm">Mở rộng tất cả</button>
+        <button class="btn sm">Thu gọn</button>
+        <button class="btn sm">📥 Xuất lịch sử</button>
+      </div>
+    </div>
+
+    <!-- ============ GIAI ĐOẠN 1: KHỞI TẠO & ĐĂNG KÝ ============ -->
+    <div class="phase-block">
+      <div class="phase-header done">
+        <span class="phase-num">①</span>
+        <span class="phase-name">Khởi tạo & Đăng ký</span>
+        <span class="badge done">✓ Hoàn tất · 05/03 → 12/03 (7 ngày)</span>
+      </div>
+      <div class="phase-body">
+        <div class="state-row done">
+          <div class="state-id">S01</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">📝</span>Nháp (Draft)</div>
+            <div class="state-meta">Bạn đã tạo bản đăng ký · 05/03/2026 14:23 → 09/03/2026 16:40 · Lưu 5 phiên bản</div>
+          </div>
+          <div class="state-action"><button class="btn sm">Xem hồ sơ v5</button></div>
+        </div>
+        <div class="state-row done">
+          <div class="state-id">S02</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">📤</span>Đã nộp – Chờ tiếp nhận</div>
+            <div class="state-meta">Phòng QLKH: <b>NV. Trần Thị Hoa</b> · Tiếp nhận 10/03/2026 09:15 · SLA: 2 ngày làm việc</div>
+          </div>
+          <div class="state-action"><button class="btn sm">Phiếu tiếp nhận</button></div>
+        </div>
+        <div class="state-row done">
+          <div class="state-id">S03</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">↩️</span>Trả lại để bổ sung <span class="badge draft">1 lần</span></div>
+            <div class="state-meta">QLKH yêu cầu bổ sung: thiếu CV đồng tác giả Lê Văn B · Trả lại 10/03 · Bạn nộp lại 12/03</div>
+          </div>
+          <div class="state-action"><button class="btn sm">Xem phản hồi</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ GIAI ĐOẠN 2: THẨM ĐỊNH ĐỀ CƯƠNG ============ -->
+    <div class="phase-block">
+      <div class="phase-header done">
+        <span class="phase-num">②</span>
+        <span class="phase-name">Thẩm định đề cương</span>
+        <span class="badge done">✓ Hoàn tất · 12/03 → 15/04 (34 ngày)</span>
+      </div>
+      <div class="phase-body">
+        <div class="state-row done">
+          <div class="state-id">S04</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">⏳</span>Chờ thẩm định đề cương</div>
+            <div class="state-meta">QĐ thành lập HĐ: QĐ-128/QLKH · 18/03/2026 · HĐ-XD-03 (5 thành viên, Chủ tịch: PGS.TS. Phạm Văn C)</div>
+          </div>
+          <div class="state-action"><button class="btn sm">QĐ thành lập</button></div>
+        </div>
+        <div class="state-row done">
+          <div class="state-id">S05</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">🔍</span>Đang thẩm định đề cương</div>
+            <div class="state-meta">HĐ-XD-03 họp 02/04/2026 · Có mặt 5/5 · 4 phản biện đã chấm · Điểm trung bình: 76/100</div>
+          </div>
+          <div class="state-action"><button class="btn sm">Biên bản HĐ</button></div>
+        </div>
+        <div class="state-row done">
+          <div class="state-id">S06</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">✏️</span>Yêu cầu chỉnh sửa đề cương <span class="badge draft">1 lần</span></div>
+            <div class="state-meta">Bổ sung phương pháp thống kê + mở rộng cỡ mẫu · Hạn 14 ngày · Bạn nộp lại 12/04 · v2 đạt</div>
+          </div>
+          <div class="state-action"><button class="btn sm">Bản giải trình</button></div>
+        </div>
+        <div class="state-row" style="opacity:.5;">
+          <div class="state-id">S07</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">⛔</span>Đề cương bị từ chối <span class="badge draft">Không xảy ra</span></div>
+            <div class="state-meta">Nhánh thay thế — đề tài đi nhánh chính (S06 → S08)</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ GIAI ĐOẠN 3: PHÊ DUYỆT THỰC HIỆN ============ -->
+    <div class="phase-block">
+      <div class="phase-header done">
+        <span class="phase-num">③</span>
+        <span class="phase-name">Phê duyệt thực hiện</span>
+        <span class="badge done">✓ Hoàn tất · 15/04 → 16/04 (1 ngày)</span>
+      </div>
+      <div class="phase-body">
+        <div class="state-row done">
+          <div class="state-id">S08</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">📥</span>Đề cương được duyệt – Chờ phê duyệt thực hiện</div>
+            <div class="state-meta">Trình Giám đốc BV ký · Hồ sơ trình: BC HĐ + dự toán + đề cương v2</div>
+          </div>
+          <div class="state-action"><button class="btn sm">Hồ sơ trình</button></div>
+        </div>
+        <div class="state-row done">
+          <div class="state-id">S09</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">✅</span>Đã phê duyệt thực hiện · Cấp mã chính thức</div>
+            <div class="state-meta">QĐ-PD-2026-018 · Giám đốc BV ký 16/04/2026 · Mã chính thức: <b>ĐT-2026-018</b> · Hợp đồng NCKH ký 16/04</div>
+          </div>
+          <div class="state-action">
+            <button class="btn sm">QĐ phê duyệt</button>
+            <button class="btn sm">HĐ NCKH</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ GIAI ĐOẠN 4: TRIỂN KHAI (HIỆN TẠI) ============ -->
+    <div class="phase-block">
+      <div class="phase-header current">
+        <span class="phase-num">④</span>
+        <span class="phase-name">Triển khai</span>
+        <span class="badge review">⏱ Đang ở giai đoạn này · Bắt đầu 16/04/2026</span>
+      </div>
+      <div class="phase-body">
+        <div class="state-row current">
+          <div class="state-id">S10</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">🔬</span>Đang thực hiện</div>
+            <div class="state-meta">Tiến độ NC: thu thập số liệu 80/120 ca · Phân tích sơ bộ: 0% · Bài báo: 0/2 dự kiến</div>
+            <div class="state-actor">👤 Người chịu trách nhiệm: <b>Bạn (CNĐT)</b> + 3 đồng NC</div>
+          </div>
+          <div class="state-action">
+            <button class="btn sm primary">Cập nhật tiến độ</button>
+            <button class="btn sm">Upload data</button>
+          </div>
+        </div>
+        <div class="state-row">
+          <div class="state-id">S11</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">📊</span>Báo cáo tiến độ <span class="badge review">Sắp đến hạn</span></div>
+            <div class="state-meta">BC tiến độ 3 tháng · Hạn: <b>16/07/2026</b> (còn 68 ngày) · Lần 0/2 · Mẫu BC03</div>
+          </div>
+          <div class="state-action"><button class="btn sm primary">📤 Nộp BC tiến độ</button></div>
+        </div>
+        <div class="state-row" style="opacity:.6;">
+          <div class="state-id">S12</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">⏸</span>Tạm dừng / Gia hạn <span class="badge draft">Tùy chọn</span></div>
+            <div class="state-meta">Có thể xin gia hạn tối đa 6 tháng · Nộp đơn trước hạn nghiệm thu ≥ 30 ngày</div>
+          </div>
+          <div class="state-action"><button class="btn sm">Đơn xin gia hạn</button></div>
+        </div>
+        <div class="state-row" style="opacity:.6;">
+          <div class="state-id">S13</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">⛔</span>Hủy bỏ / Dừng đề tài <span class="badge rejected">Trạng thái cuối nhánh thất bại</span></div>
+            <div class="state-meta">Chỉ áp dụng nếu CNĐT xin dừng hoặc HĐ phát hiện vi phạm nghiêm trọng</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ GIAI ĐOẠN 5: NGHIỆM THU CẤP CƠ SỞ ============ -->
+    <div class="phase-block">
+      <div class="phase-header">
+        <span class="phase-num">⑤</span>
+        <span class="phase-name">Nghiệm thu cấp cơ sở</span>
+        <span class="badge draft">⏳ Chưa tới · Dự kiến 11/2026</span>
+      </div>
+      <div class="phase-body">
+        <div class="state-row">
+          <div class="state-id">S14</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">📦</span>Hoàn thành NC – Chờ nghiệm thu cơ sở</div>
+            <div class="state-meta">Hồ sơ NT: BC tổng kết + sản phẩm NC + bài báo công bố · Mẫu NT-01 · QLKH tiếp nhận trong 3 ngày</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+        <div class="state-row">
+          <div class="state-id">S15</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">⚖️</span>Đang nghiệm thu cấp cơ sở</div>
+            <div class="state-meta">HĐ NT cấp cơ sở (5-7 thành viên) họp · Chấm theo thang điểm 100 · Đạt: ≥50, Khá: 70+, Xuất sắc: 90+</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+        <div class="state-row">
+          <div class="state-id">S16</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">✏️</span>Yêu cầu chỉnh sửa sau NT cơ sở <span class="badge draft">Có thể xảy ra</span></div>
+            <div class="state-meta">Quay lại S15 sau khi nộp bản giải trình + BC v2</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+        <div class="state-row">
+          <div class="state-id">S17</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">🏆</span>Đạt NT cấp cơ sở</div>
+            <div class="state-meta">QĐ công nhận kết quả cấp cơ sở · Nếu là đề tài cấp ngành/Bộ → trình tiếp lên S19</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+        <div class="state-row" style="opacity:.5;">
+          <div class="state-id">S18</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">❌</span>Không đạt NT cấp cơ sở <span class="badge rejected">Trạng thái cuối nhánh thất bại</span></div>
+            <div class="state-meta">Đề tài không được công nhận · Kết thúc</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ GIAI ĐOẠN 6: NGHIỆM THU CẤP TRÊN (Optional) ============ -->
+    <div class="phase-block">
+      <div class="phase-header skipped">
+        <span class="phase-num">⑥</span>
+        <span class="phase-name">Nghiệm thu cấp trên (Sở/Bộ Y tế)</span>
+        <span class="badge draft">⛔ Bỏ qua · Đề tài cấp cơ sở không cần</span>
+      </div>
+      <div class="phase-body">
+        <div class="state-row optional">
+          <div class="state-id">S19</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">📤</span>Chờ nghiệm thu cấp trên</div>
+            <div class="state-meta">Chỉ áp dụng cho đề tài cấp Sở / cấp Bộ / cấp Nhà nước</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+        <div class="state-row optional">
+          <div class="state-id">S20</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">⚖️</span>Đang nghiệm thu cấp trên</div>
+            <div class="state-meta">HĐ cấp Sở/Bộ chủ trì · Quy trình tương tự cấp cơ sở</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+        <div class="state-row optional">
+          <div class="state-id">S21</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">🏆</span>Đạt NT cấp trên</div>
+            <div class="state-meta">QĐ công nhận của Sở/Bộ Y tế · Trình cấp chứng nhận</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ GIAI ĐOẠN 7: CẤP CHỨNG NHẬN & LƯU TRỮ ============ -->
+    <div class="phase-block">
+      <div class="phase-header">
+        <span class="phase-num">⑦</span>
+        <span class="phase-name">Cấp chứng nhận & Lưu trữ</span>
+        <span class="badge draft">⏳ Chưa tới</span>
+      </div>
+      <div class="phase-body">
+        <div class="state-row">
+          <div class="state-id">S22</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">📜</span>Chờ cấp chứng nhận</div>
+            <div class="state-meta">Hồ sơ chứng nhận trình lãnh đạo BV ký · SLA: 7 ngày làm việc</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+        <div class="state-row">
+          <div class="state-id">S23</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">🎖️</span>Đã cấp chứng nhận</div>
+            <div class="state-meta">Số CN-XXXX · Ngày cấp · Công bố trên Tra cứu công khai · Tải PDF</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+        <div class="state-row">
+          <div class="state-id">S24</div>
+          <div class="state-info">
+            <div class="state-title"><span class="state-icon">🗄️</span>Lưu trữ / Đóng đề tài</div>
+            <div class="state-meta">Hồ sơ chuyển kho lưu trữ điện tử · Khóa chỉnh sửa · Chỉ đọc</div>
+          </div>
+          <div class="state-action"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS PHỤ: Phản hồi HĐ / File / Lịch sử / Nhóm NC -->
+  <div class="tabs">
+    <div class="tab active">📨 Phản hồi từ HĐ (3)</div>
+    <div class="tab">📎 File đính kèm (8)</div>
+    <div class="tab">🕒 Lịch sử thao tác (24)</div>
+    <div class="tab">👥 Nhóm NC (4)</div>
+    <div class="tab">💰 Giải ngân (2)</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📨 Phản hồi & yêu cầu từ Hội đồng / QLKH</div>
+    <table class="wf">
+      <thead>
+        <tr>
+          <th style="width:80px;">Trạng thái</th>
+          <th style="width:130px;">Ngày</th>
+          <th>Người gửi</th>
+          <th>Nội dung yêu cầu</th>
+          <th>Hạn xử lý</th>
+          <th style="width:120px;">Tình trạng</th>
+          <th style="width:80px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="state-id" style="background:#dcfce7;color:#166534;">S03</span></td>
+          <td>10/03/2026 11:20</td>
+          <td>NV. Trần Thị Hoa<br><span class="small text-muted">QLKH</span></td>
+          <td>Bổ sung CV của đồng tác giả Lê Văn B (file thiếu)</td>
+          <td>13/03/2026</td>
+          <td><span class="badge done">Đã xử lý 12/03</span></td>
+          <td><button class="btn sm">Xem</button></td>
+        </tr>
+        <tr>
+          <td><span class="state-id" style="background:#dcfce7;color:#166534;">S06</span></td>
+          <td>02/04/2026 16:45</td>
+          <td>PGS.TS. Phạm Văn C<br><span class="small text-muted">Chủ tịch HĐ-XD-03</span></td>
+          <td>Bổ sung phương pháp thống kê SPSS phiên bản, mở rộng cỡ mẫu từ 100 → 120 ca</td>
+          <td>16/04/2026</td>
+          <td><span class="badge done">Đã xử lý 12/04</span></td>
+          <td><button class="btn sm">Xem</button></td>
+        </tr>
+        <tr style="background:#fef9c3;">
+          <td><span class="state-id" style="background:#fef08a;color:#854d0e;">S11</span></td>
+          <td>05/05/2026 09:00</td>
+          <td>Hệ thống tự động</td>
+          <td>⏰ Nhắc nộp Báo cáo tiến độ 3 tháng (mẫu BC03)</td>
+          <td><b>16/07/2026</b></td>
+          <td><span class="badge review">⏳ Còn 68 ngày</span></td>
+          <td><button class="btn sm primary">Xử lý</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚠️ Cảnh báo & Quy tắc nghiệp vụ liên quan</div>
+    <ul style="margin-left:18px; font-size:12px; line-height:1.8;">
+      <li><b>BR-S10-01:</b> Nếu chậm BC tiến độ quá 7 ngày → tự động chuyển trạng thái phụ <span class="badge rejected">Cảnh báo trễ hạn</span> + thông báo CNĐT, QLKH, Trưởng khoa.</li>
+      <li><b>BR-S10-02:</b> Đến hạn nghiệm thu mà chưa có S14 → cảnh báo trước 30 ngày, 14 ngày, 7 ngày.</li>
+      <li><b>BR-S12-01:</b> Đơn gia hạn phải nộp ≥ 30 ngày trước hạn cũ; tối đa 1 lần / 6 tháng.</li>
+      <li><b>BR-S15-01:</b> HĐ NT phải có ≥ 5 thành viên, Chủ tịch HĐ phải khác Chủ tịch HĐ-XD ban đầu.</li>
+    </ul>
   </div>
 `,
 
